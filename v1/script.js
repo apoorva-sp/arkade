@@ -1,3 +1,4 @@
+require('dotenv').config();
 const initialFacts = [
   {
     id: 1,
@@ -70,10 +71,10 @@ function createFactList(dataArray){
 
 //load data from supabase 
 async function loadFacts() {
-  const res = await fetch("https://jcbsduldrahgzyevkljs.supabase.co/rest/v1/facts",{
+  const res = await fetch(process.env.link,{
     headers:{
-      apikey:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjYnNkdWxkcmFoZ3p5ZXZrbGpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2MzEyOTUsImV4cCI6MjA1NzIwNzI5NX0.Z0c70zYf8P8vJoMyHTRfZZ0XEtVnHxXfXB_vMvxcnvg",
-      authorization:"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjYnNkdWxkcmFoZ3p5ZXZrbGpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2MzEyOTUsImV4cCI6MjA1NzIwNzI5NX0.Z0c70zYf8P8vJoMyHTRfZZ0XEtVnHxXfXB_vMvxcnvg"
+      apikey:process.env.api_key,
+      authorization:process.env.bearer
     },
   });
   const data = await res.json();
