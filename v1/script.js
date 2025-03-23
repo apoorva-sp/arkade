@@ -3,35 +3,36 @@
 // Example Initial Data
 const initialFacts = [
   {
-      id: 1,
-      text: "React is being developed by Meta (formerly Facebook).",
-      source: "https://opensource.fb.com/",
-      category: "technology",
-      votesInteresting: 24,
-      votesMindblowing: 9,
-      votesFalse: 4,
-      createdIn: 2021,
+    id: 1,
+    text: "React is being developed by Meta (formerly Facebook).",
+    source: "https://opensource.fb.com/",
+    category: "technology",
+    votesInteresting: 24,
+    votesMindblowing: 9,
+    votesFalse: 4,
+    createdIn: 2021,
   },
   {
-      id: 2,
-      text: "Millennial dads spend 3 times as much time with their kids than their fathers spent with them.",
-      source: "https://www.mother.ly/parenting/millennial-dads-spend-more-time-with-their-kids",
-      category: "society",
-      votesInteresting: 11,
-      votesMindblowing: 2,
-      votesFalse: 0,
-      createdIn: 2019,
+    id: 2,
+    text: "Millennial dads spend 3 times as much time with their kids than their fathers spent with them.",
+    source:
+      "https://www.mother.ly/parenting/millennial-dads-spend-more-time-with-their-kids",
+    category: "society",
+    votesInteresting: 11,
+    votesMindblowing: 2,
+    votesFalse: 0,
+    createdIn: 2019,
   },
   {
-      id: 3,
-      text: "Lisbon is the capital of Portugal.",
-      source: "https://en.wikipedia.org/wiki/Lisbon",
-      category: "society",
-      votesInteresting: 8,
-      votesMindblowing: 3,
-      votesFalse: 1,
-      createdIn: 2015,
-  }
+    id: 3,
+    text: "Lisbon is the capital of Portugal.",
+    source: "https://en.wikipedia.org/wiki/Lisbon",
+    category: "society",
+    votesInteresting: 8,
+    votesMindblowing: 3,
+    votesFalse: 1,
+    createdIn: 2015,
+  },
 ];
 
 // Fact categories and their colors
@@ -55,14 +56,18 @@ const form = document.querySelector(".fact-form");
 function createFactList(dataArray) {
   factsList.innerHTML = "";
 
-  const htmlArr = dataArray.map((fact) =>
+  const htmlArr = dataArray.map(
+    (fact) =>
       `<li class="fact">
           <p>
               ${fact.text}
-              <a class="source" href="${fact.source}" target="_blank">(Source)</a>
+              <a class="source" href="${
+                fact.source
+              }" target="_blank">(Source)</a>
           </p>
           <span class="tag" style="background-color:${
-              CATEGORIES.find((cat) => cat.name === fact.category)?.color || "#ccc"
+            CATEGORIES.find((cat) => cat.name === fact.category)?.color ||
+            "#ccc"
           }">${fact.category}</span>
       </li>`
   );
@@ -73,21 +78,21 @@ function createFactList(dataArray) {
 // Function to load data from Supabase
 async function loadFacts() {
   try {
-      const res = await fetch(CONFIG.LINK, {
-          headers: {
-              apikey: CONFIG.API_KEY,
-              authorization: CONFIG.BEARER
-          }
-      });
+    const res = await fetch(CONFIG.LINK, {
+      headers: {
+        apikey: CONFIG.API_KEY,
+        authorization: CONFIG.BEARER,
+      },
+    });
 
-      if (!res.ok) {
-          throw new Error("Failed to fetch data from Supabase.");
-      }
+    if (!res.ok) {
+      throw new Error("Failed to fetch data from Supabase.");
+    }
 
-      const data = await res.json();
-      createFactList(data);
+    const data = await res.json();
+    createFactList(data);
   } catch (error) {
-      console.error("Error loading facts:", error);
+    console.error("Error loading facts:", error);
   }
 }
 
@@ -97,5 +102,7 @@ loadFacts();
 // Toggle form visibility
 btn.addEventListener("click", function () {
   form.classList.toggle("hidden");
-  btn.textContent = form.classList.contains("hidden") ? "Share a fact" : "Close";
+  btn.textContent = form.classList.contains("hidden")
+    ? "Share a fact"
+    : "Close";
 });
