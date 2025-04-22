@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./styles/loginstyle.css";
 import './styles/loadingstyle.scss'
+import { setUsernameCookie } from "./utilities/Cookies";
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState("");
@@ -8,6 +9,7 @@ const Login = ({ onLogin }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setUsernameCookie(username)
     if (username.trim()) {
       onLogin(username);
     }
