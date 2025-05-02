@@ -12,8 +12,8 @@ const Home = ({ username, onSelectGame }) => {
       color: 'purple'
     },
     { 
-      id: 'memory', 
-      name: 'Memory Match', 
+      id: 'connect_4', 
+      name: 'Connect4', 
       description: 'Test your memory skills',
       color: 'blue'
     },
@@ -41,7 +41,7 @@ const Home = ({ username, onSelectGame }) => {
         <line x1="3" y1="15" x2="21" y2="15" />
       </svg>
     ),
-    memory: (
+    connect_4: (
       <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2">
         <rect x="2" y="6" width="20" height="12" rx="2" />
         <rect x="6" y="10" width="4" height="4" />
