@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./styles/loginstyle.css";
 import './styles/loadingstyle.scss'
-import { setUsernameCookie } from "./utilities/Cookies";
+import { setUsernameCookie,getUsernameCookie,removeUsernameCookie } from "./utilities/Cookies";
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState("");

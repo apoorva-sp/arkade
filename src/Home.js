@@ -1,31 +1,33 @@
-import React from 'react'
-import './styles/homepage.css'
-import Header from './components/Header'
-
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import './styles/homepage.css';
+import Header from './components/Header';
 
 const Home = ({ username, onSelectGame }) => {
+  const navigate = useNavigate();
+  
   const games = [
-    { 
-      id: 'wordle', 
-      name: 'Wordle', 
+    {
+      id: 'wordle',
+      name: 'Wordle',
       description: 'Word guessing game',
       color: 'purple'
     },
-    { 
-      id: 'connect_4', 
-      name: 'Connect4', 
+    {
+      id: 'connect_4',
+      name: 'Connect4',
       description: 'Test your memory skills',
       color: 'blue'
     },
-    { 
-      id: 'snake', 
-      name: 'Snake Game', 
+    {
+      id: 'snake',
+      name: 'Snake Game',
       description: 'Eat and grow longer',
       color: 'green'
     },
-    { 
-      id: 'puzzle', 
-      name: 'Puzzle Slide', 
+    {
+      id: 'puzzle',
+      name: 'Puzzle Slide',
       description: 'Arrange the tiles in order',
       color: 'orange'
     }
@@ -65,47 +67,52 @@ const Home = ({ username, onSelectGame }) => {
     )
   };
 
-  return (<>
-    <div className="home-container">
-      <div className="background-glow"></div>
-      
-     <Header username={username}/>
-      
-      <main className="games-grid">
-        <h3 className="section-title">Choose your game</h3>
-        <div className="games-list">
-          {games.map(game => (
-            <div 
-              key={game.id} 
-              className={`game-card ${game.color}`}
-              onClick={() => onSelectGame(game.id)}
-            >
-              <div className="game-content">
-                <div className="game-icon">
-                  {gameIcons[game.id]}
+  const handleGameClick = (gameId) => {
+    onSelectGame(gameId);
+    if (gameId === 'wordle') {
+      navigate('/wordle');
+    }
+  };
+
+  return (
+    <>
+      <div className="home-container">
+        <div className="background-glow"></div>
+        <Header username={username}/>
+        <main className="games-grid">
+          <h3 className="section-title">Choose your game</h3>
+          <div className="games-list">
+            {games.map(game => (
+              <div
+                key={game.id}
+                className={`game-card ${game.color}`}
+                onClick={() => handleGameClick(game.id)}
+              >
+                <div className="game-content">
+                  <div className="game-icon">
+                    {gameIcons[game.id]}
+                  </div>
+                  <h3>{game.name}</h3>
+                  <p>{game.description}</p>
+                  <button className="play-now-btn">
+                    Play Now
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                  </button>
                 </div>
-                <h3>{game.name}</h3>
-                <p>{game.description}</p>
-                <button className="play-now-btn">
-                  Play Now
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  </svg>
-                </button>
+                <div className="card-glow"></div>
               </div>
-              <div className="card-glow"></div>
-            </div>
-          ))}
-        </div>
-      </main>
-      
-    </div>
-    <div className='home-container2'>
-      <button className='feedback-btn'>
-        Give Feedback
-      </button>
-    <p className="username">There are 4 games ,you can add more!</p>
-    </div>
+            ))}
+          </div>
+        </main>
+      </div>
+      <div className='home-container2'>
+        <button className='feedback-btn'>
+          Give Feedback
+        </button>
+        <p className="username">There are 4 games, you can add more!</p>
+      </div>
     </>
   );
 };
