@@ -1,57 +1,96 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import WordleApiService from './utilities/WordleApiService';
+import { getUsernameCookie } from './utilities/Cookies'
 
-const API_URL = '/api/wordle.php'; 
-
-export default function WordleGame({username}) {
-  // Game state
-  const [userId, setUserId] = useState(username || '');
+export default function WordleGame({ username }) {
+  const [userId, setUserId] = useState(getUsernameCookie() || '');
   const [wordLength, setWordLength] = useState(5);
   const [currentGuess, setCurrentGuess] = useState('');
   const [gameActive, setGameActive] = useState(false);
   const [guesses, setGuesses] = useState([]);
   const [feedback, setFeedback] = useState([]);
-  const [gameStatus, setGameStatus] = useState('setup'); // setup, active, won, lost
+  const [gameStatus, setGameStatus] = useState('setup');
   const [message, setMessage] = useState({ text: '', type: '' });
   const [currentRow, setCurrentRow] = useState(0);
   const [keyboardStatus, setKeyboardStatus] = useState({});
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   const maxAttempts = 6;
-  
-  // Available word lengths
   const wordLengths = [3, 4, 5, 6, 7, 8];
-  
-  // Keyboard layout
   const keyboard = [
     ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
     ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
     ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'backspace']
   ];
-  
-  // Handle physical keyboard input
-  const handleKeyDown = useCallback((e) => {
-    if (!gameActive) return;
-    
-    if (e.key === 'Enter') {
-      handleKeyPress('enter');
-    } else if (e.key === 'Backspace') {
-      handleKeyPress('backspace');
-    } else if (/^[a-zA-Z]$/.test(e.key)) {
-      handleKeyPress(e.key.toLowerCase());
-    }
-  }, [gameActive, currentGuess, wordLength]);
-  
-  // Add/remove keyboard event listener
+
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyDown]);
-  
-  // Handle virtual keyboard input
-  const handleKeyPress = (key) => {
-    if (!gameActive) return;
-    
+    if (username && username.trim()) {
+      setUserId(username);
+    }
+  }, [username]);
+
+  const showMessage = useCallback((text, type) => {
+    setMessage({ text, type });
+    if (type === 'info' || type === 'success') {
+      setTimeout(() => {
+        setMessage({ text: '', type: '' });
+      }, 5000);
+    }
+  }, []);
+
+  const submitGuess = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await WordleApiService.submitGuess(userId, wordLength, currentGuess);
+      if ([0, 10, 30, 40].includes(data.code)) {
+        const gameState = data['0'];
+        if (gameState && gameState.guesses && gameState.feedbacks) {
+          const newGuesses = [...guesses];
+          const newFeedback = [...feedback];
+          const guessArray = currentGuess.split('');
+          newGuesses[currentRow] = guessArray;
+          if (gameState.feedbacks[currentRow]) {
+            newFeedback[currentRow] = gameState.feedbacks[currentRow];
+          }
+          setGuesses(newGuesses);
+          setFeedback(newFeedback);
+
+          const newKeyboardStatus = { ...keyboardStatus };
+          guessArray.forEach((letter, index) => {
+            const status = gameState.feedbacks[currentRow][index];
+            if (!newKeyboardStatus[letter] || status > newKeyboardStatus[letter]) {
+              newKeyboardStatus[letter] = status;
+            }
+          });
+          setKeyboardStatus(newKeyboardStatus);
+        }
+
+        if (data.code === 30) {
+          showMessage('Congratulations! You won!', 'success');
+          setGameActive(false);
+          setGameStatus('won');
+        } else if (data.code === 40) {
+          const wordReveal = gameState?.word || '';
+          showMessage(`Game over! The word was: ${wordReveal}`, 'error');
+          setGameActive(false);
+          setGameStatus('lost');
+        } else {
+          setCurrentRow(prev => prev + 1);
+          setCurrentGuess('');
+        }
+      } else {
+        showMessage(data.message || 'Invalid word or server error', 'error');
+      }
+    } catch (error) {
+      showMessage(`Connection failed: ${error.message}`, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, wordLength, currentGuess, currentRow, guesses, feedback, keyboardStatus, showMessage]);
+
+  const handleKeyPress = useCallback((key) => {
+    if (!gameActive || isLoading) return;
+
     if (key === 'enter') {
       if (currentGuess.length === wordLength) {
         submitGuess();
@@ -63,43 +102,30 @@ export default function WordleGame({username}) {
     } else if (/^[a-z]$/.test(key) && currentGuess.length < wordLength) {
       setCurrentGuess(prev => prev + key);
     }
-  };
-  
-  // Show message with auto-hide for info messages
-  const showMessage = (text, type) => {
-    setMessage({ text, type });
-    
-    if (type === 'info') {
-      setTimeout(() => {
-        setMessage({ text: '', type: '' });
-      }, 5000);
-    }
-  };
-  
-  // Start a new game
+  }, [gameActive, isLoading, currentGuess, wordLength, submitGuess, showMessage]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!gameActive || isLoading) return;
+      if (e.key === 'Enter') handleKeyPress('enter');
+      else if (e.key === 'Backspace') handleKeyPress('backspace');
+      else if (/^[a-zA-Z]$/.test(e.key)) handleKeyPress(e.key.toLowerCase());
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyPress, gameActive, isLoading]);
+
   const startGame = async () => {
-    if (!userId.trim()) {
+    
+    if (!userId || !userId.trim()) {
       showMessage('Please enter a user ID', 'error');
       return;
     }
-    
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          serviceID: 1,
-          user_id: userId,
-          choice: wordLength.toString()
-        })
-      });
-      
-      const data = await response.json();
-      
+      setIsLoading(true);
+      const data = await WordleApiService.startGame(userId, wordLength);
+      console.log(data);
       if (data.code === 0) {
-        // Game started successfully
         setGameActive(true);
         setGameStatus('active');
         setCurrentRow(0);
@@ -107,112 +133,22 @@ export default function WordleGame({username}) {
         setGuesses(Array(maxAttempts).fill('').map(() => Array(wordLength).fill('')));
         setFeedback(Array(maxAttempts).fill('').map(() => Array(wordLength).fill(0)));
         setKeyboardStatus({});
-        
         showMessage('Game started! Try to guess the word.', 'info');
       } else {
-        showMessage(`Error: ${data.message}`, 'error');
+        showMessage(data.message || 'Error starting game', 'error');
       }
     } catch (error) {
-      showMessage('Failed to connect to the server. Please try again.', 'error');
-      console.error('Error:', error);
+      showMessage(`Connection failed: ${error.message}`, 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  // Submit the current guess to the server
-  const submitGuess = async () => {
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          serviceID: 2,
-          user_id: userId,
-          choice: wordLength.toString(),
-          guess: currentGuess
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data.code === 0 || data.code === 30 || data.code === 40 || data.code === 10) {
-        // Process the response
-        const gameState = data["0"]; // The game state is in a nested object
-        
-        if (gameState && gameState.guesses && gameState.feedbacks) {
-          // Update guesses and feedback
-          const newGuesses = [...guesses];
-          const newFeedback = [...feedback];
-          
-          // Convert the current guess to an array of characters
-          const guessArray = currentGuess.split('');
-          newGuesses[currentRow] = guessArray;
-          
-          // Get feedback for the current row
-          if (gameState.feedbacks[currentRow]) {
-            newFeedback[currentRow] = gameState.feedbacks[currentRow];
-          }
-          
-          setGuesses(newGuesses);
-          setFeedback(newFeedback);
-          
-          // Update keyboard status
-          const newKeyboardStatus = {...keyboardStatus};
-          guessArray.forEach((letter, index) => {
-            const status = gameState.feedbacks[currentRow][index];
-            // Only update if the new status is "better" than the current one
-            // 2 (correct) > 1 (present) > 0 (absent)
-            if (!newKeyboardStatus[letter] || status > newKeyboardStatus[letter]) {
-              newKeyboardStatus[letter] = status;
-            }
-          });
-          setKeyboardStatus(newKeyboardStatus);
-        }
-        
-        // Check if game is over
-        if (data.code === 30) {
-          showMessage('Congratulations! You won!', 'success');
-          setGameActive(false);
-          setGameStatus('won');
-        } else if (data.code === 40) {
-          const wordReveal = gameState && gameState.word ? gameState.word : '';
-          showMessage(`Game over! The word was: ${wordReveal}`, 'error');
-          setGameActive(false);
-          setGameStatus('lost');
-        } else {
-          // Prepare for next guess
-          setCurrentRow(prev => prev + 1);
-          setCurrentGuess('');
-        }
-      } else {
-        showMessage(`Error: ${data.message}`, 'error');
-      }
-    } catch (error) {
-      showMessage('Failed to connect to the server. Please try again.', 'error');
-      console.error('Error:', error);
-    }
-  };
-  
-  // Play again with the same settings
+
   const playAgain = async () => {
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          serviceID: 4,
-          user_id: userId,
-          choice: wordLength.toString()
-        })
-      });
-      
-      const data = await response.json();
-      
+      setIsLoading(true);
+      const data = await WordleApiService.playAgain(userId, wordLength);
       if (data.code === 0) {
-        // Game restarted successfully
         setGameActive(true);
         setGameStatus('active');
         setCurrentRow(0);
@@ -220,59 +156,46 @@ export default function WordleGame({username}) {
         setGuesses(Array(maxAttempts).fill('').map(() => Array(wordLength).fill('')));
         setFeedback(Array(maxAttempts).fill('').map(() => Array(wordLength).fill(0)));
         setKeyboardStatus({});
-        
         showMessage('New game started! Try to guess the word.', 'info');
       } else {
-        showMessage(`Error: ${data.message}`, 'error');
+        showMessage(data.message || 'Failed to restart game', 'error');
       }
     } catch (error) {
-      showMessage('Failed to connect to the server. Please try again.', 'error');
-      console.error('Error:', error);
+      showMessage(`Connection failed: ${error.message}`, 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  // End the current game
+
   const endGame = async () => {
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          serviceID: 3,
-          user_id: userId
-        })
-      });
-      
-      const data = await response.json();
-      
+      setIsLoading(true);
+      const data = await WordleApiService.endGame(userId);
       if (data.code === 0) {
-        // Game ended successfully
         setGameActive(false);
         setGameStatus('setup');
-        
         showMessage('Game ended. Start a new game when ready.', 'info');
       } else {
-        showMessage(`Error: ${data.message}`, 'error');
+        showMessage(data.message || 'Failed to end game', 'error');
       }
     } catch (error) {
-      showMessage('Failed to connect to the server. Please try again.', 'error');
-      console.error('Error:', error);
+      setGameActive(false);
+      setGameStatus('setup');
+      showMessage('Connection issue, but game ended locally.', 'info');
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  // Get cell status class
+
   const getCellStatus = (row, col) => {
-    if (feedback[row] && feedback[row][col] === 2) return 'bg-green-500 border-green-500 text-white';
-    if (feedback[row] && feedback[row][col] === 1) return 'bg-yellow-500 border-yellow-500 text-white';
-    if (feedback[row] && feedback[row][col] === 0 && guesses[row][col]) return 'bg-gray-500 border-gray-500 text-white';
+    if (feedback[row]?.[col] === 2) return 'bg-green-500 border-green-500 text-white';
+    if (feedback[row]?.[col] === 1) return 'bg-yellow-500 border-yellow-500 text-white';
+    if (feedback[row]?.[col] === 0 && guesses[row][col]) return 'bg-gray-500 border-gray-500 text-white';
     return 'bg-white border-gray-300';
   };
-  
-  // Get key status class
+
   const getKeyStatus = (key) => {
-    if (key === 'enter' || key === 'backspace') return 'bg-gray-300 hover:bg-gray-400';
+    if (['enter', 'backspace'].includes(key)) return 'bg-gray-300 hover:bg-gray-400';
     if (keyboardStatus[key] === 2) return 'bg-green-500 text-white';
     if (keyboardStatus[key] === 1) return 'bg-yellow-500 text-white';
     if (keyboardStatus[key] === 0) return 'bg-gray-500 text-white';
@@ -305,6 +228,7 @@ export default function WordleGame({username}) {
               onChange={(e) => setUserId(e.target.value)}
               placeholder="Enter your user ID" 
               className="w-full p-2 border border-gray-300 rounded"
+              disabled={isLoading}
             />
           </div>
           
@@ -315,6 +239,7 @@ export default function WordleGame({username}) {
               value={wordLength}
               onChange={(e) => setWordLength(parseInt(e.target.value))}
               className="w-full p-2 border border-gray-300 rounded"
+              disabled={isLoading}
             >
               {wordLengths.map(length => (
                 <option key={length} value={length}>{length} letters</option>
@@ -324,9 +249,20 @@ export default function WordleGame({username}) {
           
           <button 
             onClick={startGame}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex justify-center items-center ${
+              isLoading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
+            disabled={isLoading}
           >
-            Start Game
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading...
+              </>
+            ) : 'Start Game'}
           </button>
         </div>
       )}
@@ -362,8 +298,10 @@ export default function WordleGame({username}) {
                     key={`key-${key}`}
                     onClick={() => handleKeyPress(key)}
                     className={`${key === 'enter' || key === 'backspace' ? 'px-3 py-4' : 'w-8 h-12'} 
-                      ${getKeyStatus(key)} rounded font-bold text-sm uppercase`}
-                    disabled={!gameActive}
+                      ${getKeyStatus(key)} rounded font-bold text-sm uppercase ${
+                        !gameActive || isLoading ? 'opacity-70 cursor-not-allowed' : ''
+                      }`}
+                    disabled={!gameActive || isLoading}
                   >
                     {key === 'backspace' ? '⌫' : key}
                   </button>
@@ -377,17 +315,23 @@ export default function WordleGame({username}) {
             {(gameStatus === 'won' || gameStatus === 'lost') && (
               <button 
                 onClick={playAgain}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                className={`bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ${
+                  isLoading ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
+                disabled={isLoading}
               >
-                Play Again
+                {isLoading ? 'Loading...' : 'Play Again'}
               </button>
             )}
             
             <button 
               onClick={endGame}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              className={`bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ${
+                isLoading ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
+              disabled={isLoading}
             >
-              End Game
+              {isLoading ? 'Loading...' : 'End Game'}
             </button>
           </div>
         </div>

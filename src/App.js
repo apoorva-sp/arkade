@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './Home';
 import Login from './Login';
+import { removeUsernameCookie } from './utilities/Cookies';
 import Wordlepage from './Wordlepage';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
 
   const handleLogout = () => {
     setUsername('');
+    removeUsernameCookie();
   };
 
   const handleSelectGame = (gameId) => {
