@@ -124,7 +124,6 @@ export default function WordleGame({ username }) {
     try {
       setIsLoading(true);
       const data = await WordleApiService.startGame(userId, wordLength);
-      console.log(data);
       if (data.code === 0) {
         setGameActive(true);
         setGameStatus('active');

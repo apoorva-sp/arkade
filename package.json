@@ -21,6 +21,7 @@
     "web-vitals": "^2.1.4",
     "wouter": "^3.6.0"
   },
+  "proxy": "http://arcade.pivotpt.in",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

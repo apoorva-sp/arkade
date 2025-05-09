@@ -1,11 +1,11 @@
 /**
  * Simplified Wordle Game API service
  */
- import axios from 'axios';
+ import axios from './axios'
 
  // Add a CORS proxy to handle cross-origin requests
  
- const API_URL ='http://arcade.pivotpt.in/wordleAPI.php';
+ const API_URL ='/wordleAPI.php';
  
  class WordleApiService {
    /**
@@ -27,11 +27,10 @@
        // Add any API authentication if available (replace with actual values)
        const headers = {
          'Content-Type': 'application/json',
-         'Referer': 'http://arcade.pivotpt.in/',
-         'Origin': 'http://arcade.pivotpt.in'
        };
        
        const response = await axios.post(API_URL, payload, { headers });
+       console.log(response)
        
        return response.data;
      } catch (error) {
