@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -248,3 +249,9 @@ export default function Profile() {
     </div>
   );
 }
+=======
+export default function Profile() {
+  return "hi";
+  /// add profile code here just add update username ige 1 form
+}
+>>>>>>> a091406 (changed)

@@ -12,6 +12,7 @@
 }
 
 .wordle-box {
+<<<<<<< HEAD
   width: 40px;
   height: 40px;
   border: 1px solid #ccc;
@@ -27,6 +28,19 @@
 .yellow { background-color: #c9b458; color: white; }
 .gray { background-color: #787c7e; color: white; }
 
+=======
+  width: 48px;
+  height: 48px;
+  border: 2px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: white;
+}
+>>>>>>> a091406 (changed)
 .start-game-button {
   background-color: #28a745; /* Bootstrap green */
   color: white;

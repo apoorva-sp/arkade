@@ -1,9 +1,14 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
+=======
+import { useState, useEffect, use } from "react";
+>>>>>>> a091406 (changed)
 import Cookies from "js-cookie";
 import axios from "axios";
 import "./styles/wordle.css";
 import Header from "./components/Header.js";
 
+<<<<<<< HEAD
 // WordleGrid Component
 function WordleGrid({
   wordLength,
@@ -64,16 +69,26 @@ function WordleGrid({
 }
 
 // Main WordleGame Component
+=======
+>>>>>>> a091406 (changed)
 export default function WordleGame() {
   const user_id = Cookies.get("user_id");
   const url = "/wordleAPI.php";
   const [isLoading, setIsLoading] = useState(false);
+<<<<<<< HEAD
   const [word, setWord] = useState("");
   const [guess, setGuess] = useState("");
+=======
+
+  const [word, setWord] = useState("");
+  const [guess, setGuess] = useState("");
+
+>>>>>>> a091406 (changed)
   const [guesses, setGuesses] = useState([]);
   const [bitmaps, setBitmaps] = useState([]);
   const [secret, setSecret] = useState("");
   const [lives, setLives] = useState("");
+<<<<<<< HEAD
   const [gamePlaying, setGamePlaying] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [gameWon, setGameWon] = useState(false);
@@ -94,6 +109,46 @@ export default function WordleGame() {
     setSecret("");
   };
   
+=======
+
+  const [gamePlaying, setGamePlaying] = useState(false);
+  const [wordLength, setWordLength] = useState(5);
+
+  const WordleGrid = () => {
+    const rows = wordLength + 1;
+    const columns = wordLength;
+    const [grid] = useState(
+      Array.from({ length: rows }, () => Array(columns).fill(""))
+    );
+
+    return (
+      <div className="wordle-grid">
+        {grid.map((row, rowIndex) => (
+          <div key={rowIndex} className="wordle-row">
+            {row.map((_, colIndex) => (
+              <div key={colIndex} className="wordle-box"></div>
+            ))}
+          </div>
+        ))}
+        <div className="wordle-guess-wrapper">
+          <label htmlFor="guessInput">Enter Your Guess:</label>
+          <input
+            type="text"
+            id="guessInput"
+            className="guess-input"
+            value={guess}
+            onChange={(e) => setGuess(e.target.value)}
+          />
+
+          <button className="guess-button" onClick={guessWord}>
+            Guess
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+>>>>>>> a091406 (changed)
   const WordleOptions = () => {
     const handleStart = async () => {
       setIsLoading(true);
@@ -105,11 +160,14 @@ export default function WordleGame() {
         });
         if (response.data.code === 0) {
           setGamePlaying(true);
+<<<<<<< HEAD
           // Initialize other state if needed
           setGuesses([]);
           setBitmaps([]);
           setGameOver(false);
           setGameWon(false);
+=======
+>>>>>>> a091406 (changed)
         } else {
           alert(response.data.message);
         }
@@ -119,7 +177,11 @@ export default function WordleGame() {
       }
       setIsLoading(false);
     };
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> a091406 (changed)
     return (
       <div className="wordle-options-wrapper">
         <label htmlFor="wordLength">Select Word Length: </label>
@@ -134,34 +196,51 @@ export default function WordleGame() {
           <option value={5}>5</option>
           <option value={6}>6</option>
         </select>
+<<<<<<< HEAD
         <button 
           className="start-game-button" 
           onClick={handleStart}
           disabled={isLoading}
         >
           {isLoading ? "Starting..." : "Start Game"}
+=======
+
+        <button className="start-game-button" onClick={handleStart}>
+          Start Game
+>>>>>>> a091406 (changed)
         </button>
       </div>
     );
   };
+<<<<<<< HEAD
   
   const guessWord = async () => {
     if (!guess || guess.length !== wordLength) return;
+=======
+
+  const guessWord = async () => {
+    if (!guess) return;
+>>>>>>> a091406 (changed)
     setIsLoading(true);
     try {
       const response = await axios.post(url, {
         word: guess,
         user_id,
         serviceID: 2,
+<<<<<<< HEAD
       });    
       console.log("API Response:", response.data);
       console.log("API Response bitmaps:", JSON.stringify(response.data.bitmaps));
       
+=======
+      });
+>>>>>>> a091406 (changed)
       if (response.data.code === 0) {
         setSecret(response.data.secret);
         setLives(response.data.lives);
         setGamePlaying(response.data.playing);
         setGuesses(response.data.guesses);
+<<<<<<< HEAD
         
         // Check if game is over
         if (!response.data.playing) {
@@ -207,6 +286,10 @@ export default function WordleGame() {
         console.log("Processed bitmaps:", processedBitmaps);
         setBitmaps(processedBitmaps);
         
+=======
+        setBitmaps(response.data.bitmaps);
+        updateBoard();
+>>>>>>> a091406 (changed)
         setGuess(""); // clear input after submission
       } else {
         alert(response.data.message);
@@ -217,6 +300,7 @@ export default function WordleGame() {
     }
     setIsLoading(false);
   };
+<<<<<<< HEAD
   
   return (
     <div className="home-container">
@@ -251,3 +335,17 @@ export default function WordleGame() {
     </div>
   );
 }
+=======
+
+  const updateBoard = () => {
+    //todo
+  };
+
+  return (
+    <div className="home-container">
+      <Header username={Cookies.get("username")} />
+      {gamePlaying ? <WordleGrid /> : <WordleOptions />}
+    </div>
+  );
+}
+>>>>>>> a091406 (changed)

@@ -60,6 +60,7 @@ const Home = ({ username, onSelectGame }) => {
     ),
     wordRank: (
       <svg
+<<<<<<< HEAD
         xmlns="http://www.w3.org/2000/svg"
         width="30"
         height="30"
@@ -77,6 +78,17 @@ const Home = ({ username, onSelectGame }) => {
           fill-rule="evenodd"
           d="M7.646 6.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 7.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"
         />
+=======
+        viewBox="0 0 24 24"
+        width="32"
+        height="32"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path d="M4 14s.5-3 2-3 2.5 3 4 3 2.5-3 4-3 2 3 2 3" />
+        <circle cx="18" cy="12" r="2" />
+>>>>>>> a091406 (changed)
       </svg>
     ),
   };
@@ -87,8 +99,11 @@ const Home = ({ username, onSelectGame }) => {
     }
     if (gameId === "wordRank") {
       navigate("/wordRank");
+<<<<<<< HEAD
     } else if (gameId === "connect_4") {
       navigate("/connect4");
+=======
+>>>>>>> a091406 (changed)
     }
   };
 
@@ -135,6 +150,10 @@ const Home = ({ username, onSelectGame }) => {
       </div>
       <div className="home-container2">
         <button className="feedback-btn">Give Feedback</button>
+<<<<<<< HEAD
+=======
+        <p className="username">There are 4 games, you can add more!</p>
+>>>>>>> a091406 (changed)
       </div>
     </>
   );
