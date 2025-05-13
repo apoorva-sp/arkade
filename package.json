@@ -51,5 +51,21 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3"
-  }
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Retr0557/mini_games.git"
+  },
+  "keywords": [
+    "online",
+    "games",
+    "mern"
+  ],
+  "author": "aditya anirudh apoorva",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Retr0557/mini_games/issues"
+  },
+  "description": ""
 }

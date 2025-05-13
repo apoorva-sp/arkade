@@ -1,12 +1,10 @@
-
-
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
   background: linear-gradient(135deg, #6366f1, #a855f7);
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   overflow: hidden;
   position: relative;
 }
@@ -23,7 +21,17 @@
   overflow: hidden;
   z-index: 1;
 }
+.username {
+  border: none;
+}
+.username {
+  transition: transform 0.3s ease, color 0.3s ease;
+}
 
+.username:hover {
+  transform: scale(1.1);
+  cursor: pointer;
+}
 .login-header {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -196,3 +204,17 @@
   left: 30px;
 }
 
+.toggle-auth {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  color: #00aaff;
+  cursor: pointer;
+  font-weight: bold;
+  padding-left: 5px;
+}
