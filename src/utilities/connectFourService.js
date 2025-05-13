@@ -2,6 +2,7 @@ import axios from 'axios';
 
 // Base API configuration with proxy handling
 const API = axios.create({
+    baseURL:'/connectFour.php',
   headers: {
     'Content-Type': 'application/json',
   }
