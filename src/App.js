@@ -4,6 +4,7 @@ import Home from "./Home";
 import Login from "./Login";
 import Wordlepage from "./Wordle";
 import Profile from "./Profile";
+import WordRank from "./wordRank";
 
 function App() {
   return (

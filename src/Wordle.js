@@ -1,7 +1,7 @@
 import { useState, useEffect, use } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
-import "./styles/wordleGrid.css";
+import "./styles/wordle.css";
 import Header from "./components/Header.js";
 
 export default function WordleGame() {
