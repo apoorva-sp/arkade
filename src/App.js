@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Connect4 from './Connect4';
 import Home from './Home';
 import Login from './Login';
 import { removeUsernameCookie } from './utilities/Cookies';
@@ -59,6 +60,17 @@ function App() {
             )
           }
         />
+        <Route
+          path="/connect4"
+          element={
+            username ? (
+              <Connect4 username={username} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
