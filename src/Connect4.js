@@ -12,6 +12,22 @@ function ConnectFourApp() {
   const [gamePhase, setGamePhase] = useState('login'); // login, waiting, playing, gameover
   const [isLoading, setIsLoading] = useState(false);
 
+  // Define updateGameState before using it in the useEffect
+  const updateGameState = useCallback((data) => {
+    setGameState(data);
+    setCurrentPlayer(data.currentPlayer);
+    
+    if (data.winner) {
+      setGamePhase('gameover');
+      setMessage(data.winner === username ? 'You won!' : `${data.winner} won!`);
+    } else if (data.draw) {
+      setGamePhase('gameover');
+      setMessage("It's a draw!");
+    } else {
+      setGamePhase('playing');
+    }
+  }, [username]);
+
   // Connect to socket on component mount
   useEffect(() => {
     // Initialize socket connection
@@ -40,21 +56,6 @@ function ConnectFourApp() {
       socketService.joinRoom(roomCode);
     }
   }, [roomCode]);
-
-  const updateGameState = useCallback((data) => {
-    setGameState(data);
-    setCurrentPlayer(data.currentPlayer);
-    
-    if (data.winner) {
-      setGamePhase('gameover');
-      setMessage(data.winner === username ? 'You won!' : `${data.winner} won!`);
-    } else if (data.draw) {
-      setGamePhase('gameover');
-      setMessage("It's a draw!");
-    } else {
-      setGamePhase('playing');
-    }
-  },[username]);
 
   const showError = (error) => {
     console.error(error);

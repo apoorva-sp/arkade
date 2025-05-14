@@ -80,6 +80,9 @@ const Home = ({ username, onSelectGame }) => {
     if (gameId === "wordRank") {
       navigate("/wordRank");
     }
+    else if(gameId === 'connect_4'){
+      navigate('/connect4')
+    }
   };
 
   return (
