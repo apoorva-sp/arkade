@@ -84,6 +84,16 @@ export default function WordleGame() {
     console.log("Current bitmaps:", bitmaps);
   }, [bitmaps]);
   
+  const resetGame = () => {
+    setGamePlaying(false);
+    setGameOver(false);
+    setGameWon(false);
+    setGuess("");
+    setGuesses([]);
+    setBitmaps([]);
+    setSecret("");
+  };
+  
   const WordleOptions = () => {
     const handleStart = async () => {
       setIsLoading(true);
@@ -161,6 +171,14 @@ export default function WordleGame() {
           }
         }
         
+        // Check if player won by guessing the correct word
+        // This handles cases where the API might not set playing=false on win
+        if (response.data.secret && guess.toLowerCase() === response.data.secret.toLowerCase()) {
+          setGameWon(true);
+          setGameOver(true);
+          setGamePlaying(false);
+        }
+        
         // Log and examine the bitmaps
         const newBitmaps = response.data.bitmaps;
         console.log("New bitmaps from API (raw):", newBitmaps);
@@ -219,16 +237,10 @@ export default function WordleGame() {
         <div className="game-over-container">
           <h2>{gameWon ? "Congratulations! You won!" : "Game Over!"}</h2>
           {!gameWon && secret && <p>The word was: <strong>{secret}</strong></p>}
+          {gameWon && <p>You correctly guessed: <strong>{secret}</strong></p>}
           <button 
             className="play-again-button" 
-            onClick={() => {
-              setGamePlaying(false);
-              setGameOver(false);
-              setGameWon(false);
-              setGuess("");
-              setGuesses([]);
-              setBitmaps([]);
-            }}
+            onClick={resetGame}
           >
             Play Again
           </button>
