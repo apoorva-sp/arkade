@@ -67,6 +67,7 @@ const Home = ({ username, onSelectGame }) => {
         strokeWidth="2"
         class="bi bi-chevron-double-up"
         viewBox="0 0 16 16"
+        
       >
         <path
           fill-rule="evenodd"
