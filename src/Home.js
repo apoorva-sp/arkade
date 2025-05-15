@@ -60,15 +60,22 @@ const Home = ({ username, onSelectGame }) => {
     ),
     wordRank: (
       <svg
-        viewBox="0 0 24 24"
-        width="32"
-        height="32"
-        fill="none"
-        stroke="currentColor"
+        xmlns="http://www.w3.org/2000/svg"
+        width="30"
+        height="30"
+        fill="currentColor"
         strokeWidth="2"
+        class="bi bi-chevron-double-up"
+        viewBox="0 0 16 16"
       >
-        <path d="M4 14s.5-3 2-3 2.5 3 4 3 2.5-3 4-3 2 3 2 3" />
-        <circle cx="18" cy="12" r="2" />
+        <path
+          fill-rule="evenodd"
+          d="M7.646 2.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 3.707 2.354 9.354a.5.5 0 1 1-.708-.708z"
+        />
+        <path
+          fill-rule="evenodd"
+          d="M7.646 6.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 7.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"
+        />
       </svg>
     ),
   };
@@ -79,9 +86,8 @@ const Home = ({ username, onSelectGame }) => {
     }
     if (gameId === "wordRank") {
       navigate("/wordRank");
-    }
-    else if(gameId === 'connect_4'){
-      navigate('/connect4')
+    } else if (gameId === "connect_4") {
+      navigate("/connect4");
     }
   };
 
@@ -128,7 +134,6 @@ const Home = ({ username, onSelectGame }) => {
       </div>
       <div className="home-container2">
         <button className="feedback-btn">Give Feedback</button>
-        <p className="username">There are 4 games, you can add more!</p>
       </div>
     </>
   );
