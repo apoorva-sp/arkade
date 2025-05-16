@@ -200,7 +200,7 @@ function Inputs({
         onChange={(e) => setGuess(e.target.value)}
       />
       <button
-        className="btn"
+        className="btn btn-primary"
         style={{
           backgroundColor: "#5C6BC0",
           color: "#fff",

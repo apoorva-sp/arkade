@@ -5,6 +5,7 @@
   --bs-spinner-border-width: 0.25em;
   --bs-spinner-animation-speed: 0.75s;
   --bs-spinner-animation-name: spinner-border;
+  --bs-spinner-color: #d000ff;
 }
 
 @keyframes spinner-border {
@@ -12,4 +13,3 @@
     transform: rotate(360deg) /* rtl:ignore */;
   }
 }
-
