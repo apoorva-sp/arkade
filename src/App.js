@@ -16,7 +16,7 @@ function App() {
         <Route path="/wordle" element={<Wordlepage />} />
         <Route path="/connect4" element={<Connect4 />} />
         <Route path="/wordRank" element={<WordRank />} />
-        <Route path="*" element={<Navigate to="/home" />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

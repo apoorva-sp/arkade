@@ -62,6 +62,24 @@
   background-color: #218838; /* Darker green */
 }
 
+/* Start game button */
+.exit-game-button {
+  background-color: #ff0000; /* Bootstrap green */
+  color: white;
+  font-size: 18px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+.exit-game-button:hover {
+  background-color: #ff0045; /* Darker green */
+}
+
 /* Dropdown styles */
 .wordle-dropdown {
   padding: 10px 16px;

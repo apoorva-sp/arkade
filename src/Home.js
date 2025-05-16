@@ -2,9 +2,20 @@ import { useNavigate } from "react-router-dom";
 import "./styles/homepage.css";
 import Header from "./components/Header";
 import Cookies from "js-cookie";
+import { useEffect, useRef } from "react";
 
 const Home = ({ username, onSelectGame }) => {
   const navigate = useNavigate();
+
+  const user_id = Cookies.get("user_id") ?? null;
+  const alerted = useRef(false);
+  useEffect(() => {
+    if (user_id === null && !alerted.current) {
+      alerted.current = true;
+      alert("You have to enter a username at least to play");
+      navigate("/");
+    }
+  }, [user_id, navigate]);
 
   const games = [
     {

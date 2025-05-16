@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./styles/wordle.css";
 import Header from "./components/Header.js";
 
-// WordleGrid Component
 function WordleGrid({
   wordLength,
   guess,
@@ -15,7 +15,6 @@ function WordleGrid({
 }) {
   return (
     <div className="wordle-grid">
-      {/* Render past guesses */}
       {guesses.map((word, rowIndex) => (
         <div key={rowIndex} className="wordle-row">
           {word.split("").map((char, colIndex) => {
@@ -70,36 +69,70 @@ function WordleGrid({
 }
 
 export default function WordleGame() {
-  const user_id = Cookies.get("user_id");
+  const navigate = useNavigate();
+  const user_id = Cookies.get("user_id") ?? null;
+  const alerted = useRef(false);
+
+  useEffect(() => {
+    if (user_id === null && !alerted.current) {
+      alerted.current = true;
+      alert("You have to enter a username at least to play");
+      navigate("/");
+    }
+  }, [user_id, navigate]);
+
   const url = "/wordleAPI.php";
 
   const [isLoading, setIsLoading] = useState(false);
-  const [wordLength, setWordLength] = useState(5);
 
+  const [wordLength, setWordLength] = useState(5);
   const [gamePlaying, setGamePlaying] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
+  const [first, setFirst] = useState(true);
   const [gameWon, setGameWon] = useState(false);
 
-  const [word, setWord] = useState("");
   const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState([]);
   const [bitmaps, setBitmaps] = useState([]);
   const [secret, setSecret] = useState("");
   const [lives, setLives] = useState(0);
 
-  // Reset game state
-  const resetGame = () => {
-    setGamePlaying(false);
-    setGameOver(false);
-    setGameWon(false);
-    setGuess("");
-    setGuesses([]);
-    setBitmaps([]);
-    setSecret("");
-    setLives(0);
-  };
+  const WordleOptions = ({ first }) => (
+    <div className="wordle-options-wrapper">
+      <label htmlFor="wordLength">Select Word Length: </label>
+      <select
+        id="wordLength"
+        className="wordle-dropdown"
+        value={wordLength}
+        onChange={(e) => setWordLength(parseInt(e.target.value, 10))}
+        disabled={isLoading}
+      >
+        {[3, 4, 5, 6].map((len) => (
+          <option key={len} value={len}>
+            {len}
+          </option>
+        ))}
+      </select>
+      {first ? (
+        <button
+          className="start-game-button"
+          onClick={handleStart}
+          disabled={isLoading}
+        >
+          {isLoading ? "Starting..." : "Start Game"}
+        </button>
+      ) : (
+        <>
+          <button className="start-game-button" onClick={resetGame}>
+            Play Again
+          </button>
+          <button className="exit-game-button" onClick={exitGame}>
+            Exit Game
+          </button>
+        </>
+      )}
+    </div>
+  );
 
-  // Start a new game
   const handleStart = async () => {
     setIsLoading(true);
     try {
@@ -110,7 +143,6 @@ export default function WordleGame() {
       });
       if (response.data.code === 0) {
         setGamePlaying(true);
-        setGameOver(false);
         setGameWon(false);
         setGuesses([]);
         setBitmaps([]);
@@ -127,7 +159,6 @@ export default function WordleGame() {
     setIsLoading(false);
   };
 
-  // Submit a guess
   const guessWord = async () => {
     if (guess.length !== wordLength) return;
 
@@ -143,9 +174,8 @@ export default function WordleGame() {
         setSecret(response.data.secret);
         setLives(response.data.lives);
         setGamePlaying(response.data.playing);
-        setGuesses(response.data.guesses || []);
-
-        // Handle bitmaps parsing
+        setGuesses(response.data.guesses);
+        setGuess("");
         let newBitmaps = response.data.bitmaps;
         if (typeof newBitmaps === "string") {
           try {
@@ -159,28 +189,13 @@ export default function WordleGame() {
         }
         setBitmaps(newBitmaps);
 
-        // Game over conditions
         if (!response.data.playing) {
-          setGameOver(true);
-          if (
-            response.data.secret &&
-            guess.toLowerCase() === response.data.secret.toLowerCase()
-          ) {
+          setGamePlaying(false);
+          if (guess.toLowerCase() === response.data.secret.toLowerCase()) {
             setGameWon(true);
           }
+          setFirst(false);
         }
-        // Also double-check for win
-        if (
-          response.data.secret &&
-          guess.toLowerCase() === response.data.secret.toLowerCase()
-        ) {
-          setGameWon(true);
-          setGameOver(true);
-          setGamePlaying(false);
-        }
-        setGuess("");
-      } else {
-        alert(response.data.message);
       }
     } catch (error) {
       console.error(error);
@@ -189,41 +204,59 @@ export default function WordleGame() {
     setIsLoading(false);
   };
 
-  // Wordle options for selecting word length and starting game
-  const WordleOptions = () => (
-    <div className="wordle-options-wrapper">
-      <label htmlFor="wordLength">Select Word Length: </label>
-      <select
-        id="wordLength"
-        className="wordle-dropdown"
-        value={wordLength}
-        onChange={(e) => setWordLength(parseInt(e.target.value, 10))}
-        disabled={isLoading}
-      >
-        {[3, 4, 5, 6].map((len) => (
-          <option key={len} value={len}>
-            {len}
-          </option>
-        ))}
-      </select>
-      <button
-        className="start-game-button"
-        onClick={handleStart}
-        disabled={isLoading}
-      >
-        {isLoading ? "Starting..." : "Start Game"}
-      </button>
-    </div>
-  );
+  const resetGame = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post(url, {
+        user_id,
+        length: wordLength,
+        serviceID: 4,
+      });
+      if (response.data.code === 0) {
+        setGamePlaying(true);
+        setGameWon(false);
+        setGuesses([]);
+        setBitmaps([]);
+        setSecret("");
+        setLives(response.data.lives);
+        setGuess("");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Starting game error:", error);
+      alert("Something went wrong. Please try again.");
+    }
+    setIsLoading(false);
+  };
+
+  const exitGame = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post(url, {
+        user_id,
+        length: wordLength,
+        serviceID: 3,
+      });
+      if (response.data.code === 0) {
+        navigate("/home");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Starting game error:", error);
+      alert("Something went wrong. Please try again.");
+    }
+    setIsLoading(false);
+  };
 
   return (
     <div className="home-container">
       <Header username={Cookies.get("username")} />
-      {gamePlaying && !gameOver ? (
+
+      {gamePlaying ? (
         <>
-          {lives !== null && (
-            <div className="lives-remaining">Lives: {lives}</div>
-          )}
+          <div className="lives-remaining">Lives: {lives}</div>
           <WordleGrid
             wordLength={wordLength}
             guess={guess}
@@ -233,25 +266,21 @@ export default function WordleGame() {
             bitmaps={bitmaps}
           />
         </>
-      ) : gameOver ? (
+      ) : !first ? (
         <div className="game-over-container">
           <h2>{gameWon ? "🎉 Congratulations! You won! 🎉" : "Game Over!"}</h2>
-          {!gameWon && secret && (
-            <p>
-              The word was: <strong>{secret.toUpperCase()}</strong>
-            </p>
-          )}
+          <p>
+            The word was: <strong>{secret.toUpperCase()}</strong>
+          </p>
           {gameWon && (
             <p>
               You correctly guessed: <strong>{secret.toUpperCase()}</strong>
             </p>
           )}
-          <button className="play-again-button" onClick={resetGame}>
-            Play Again
-          </button>
+          <WordleOptions first={false} />
         </div>
       ) : (
-        <WordleOptions />
+        <WordleOptions first={true} />
       )}
     </div>
   );
