@@ -56,20 +56,15 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Retr0557/mini_games.git"
+    "url": "git+https://github.com/apoorva-sp/arkade.git"
   },
   "keywords": [
     "online",
-<<<<<<< HEAD
     "games",
-    "mern"
-  ],
-  "author": "aditya anirudh apoorva",
-=======
+    "mern",
     "game"
   ],
-  "author": "apoorva",
->>>>>>> a091406 (changed)
+  "author": "aditya anirudh apoorva",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Retr0557/mini_games/issues"
