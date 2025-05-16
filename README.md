@@ -20,4 +20,5 @@ const CONFIG = {
 API_KEY: your_api_key,
 LINK: your_link
 };
+
 """
