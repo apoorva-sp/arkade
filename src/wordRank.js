@@ -10,6 +10,7 @@ const Choices = [
 ];
 
 function WordRank() {
+  // State variables
   const [answer, setAnswer] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
