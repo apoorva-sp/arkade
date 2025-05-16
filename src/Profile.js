@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import "./styles/homepage.css";
+import Header from "./components/Header";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -57,8 +59,8 @@ export default function Profile() {
   };
 
   return (
-    <div className="profile-container">
-      <h1>Profile: {username}</h1>
+    <div className="home-container">
+      <Header username={Cookies.get("username")} />
 
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
