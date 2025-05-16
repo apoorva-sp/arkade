@@ -13,7 +13,6 @@
   "bugs": {
     "url": "https://github.com/apoorva-sp/arkade/issues"
   },
-  "homepage": "https://github.com/apoorva-sp/arkade",
   "keywords": [
     "online",
     "games",
@@ -73,5 +72,4 @@
   },
   "proxy": "http://arcade.pivotpt.in",
   "gitTest": "Temporary field to test Git tracking. Safe to remove."
-
 }

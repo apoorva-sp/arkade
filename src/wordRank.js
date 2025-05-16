@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Header from "./components/Header";
 import Cookies from "js-cookie";
+import "./styles/wordRank.css";
 
 const Choices = [
   { choice: "country" },
@@ -191,23 +192,11 @@ function Inputs({
       <input
         type="text"
         className="form-control"
-        style={{
-          backgroundColor: "#1C1F2A",
-          color: "#EDEDED",
-          border: "1px solid #5C6BC0",
-        }}
         placeholder="Enter your guess"
         value={guess}
         onChange={(e) => setGuess(e.target.value)}
       />
-      <button
-        className="btn btn-primary"
-        style={{
-          backgroundColor: "#5C6BC0",
-          color: "#fff",
-        }}
-        onClick={handleGuess}
-      >
+      <button className="btn btn-primary " onClick={handleGuess}>
         Play
       </button>
     </div>
