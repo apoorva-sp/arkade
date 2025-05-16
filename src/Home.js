@@ -4,7 +4,7 @@ import Header from "./components/Header";
 import Cookies from "js-cookie";
 import { useEffect, useRef } from "react";
 
-const Home = ({ username, onSelectGame }) => {
+const Home = () => {
   const navigate = useNavigate();
 
   const user_id = Cookies.get("user_id") ?? null;
@@ -99,7 +99,7 @@ const Home = ({ username, onSelectGame }) => {
       <div className="home-container">
         <div className="background-glow"></div>
         <Header username={Cookies.get("username")} />
-        <main className="games-grid">
+        <div className="games-grid">
           <h3 className="section-title">Choose your game</h3>
           <div className="games-list">
             {games.map((game) => (
@@ -133,7 +133,7 @@ const Home = ({ username, onSelectGame }) => {
               </div>
             ))}
           </div>
-        </main>
+        </div>
       </div>
       <div className="home-container2">
         <button className="feedback-btn">Give Feedback</button>

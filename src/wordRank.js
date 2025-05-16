@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Header from "./components/Header";
 import Cookies from "js-cookie";
@@ -11,7 +12,18 @@ const Choices = [
 ];
 
 function WordRank() {
-  // State variables
+  const navigate = useNavigate();
+  const user_id = Cookies.get("user_id") ?? null;
+  const alerted = useRef(false);
+
+  useEffect(() => {
+    if (user_id === null && !alerted.current) {
+      alerted.current = true;
+      alert("You have to enter a username at least to play");
+      navigate("/");
+    }
+  }, [user_id, navigate]);
+
   const [answer, setAnswer] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
@@ -19,11 +31,29 @@ function WordRank() {
   const [aboveRows, setAboveRows] = useState([]);
   const [belowRows, setBelowRows] = useState([]);
   const [currentRow, setCurrentRow] = useState(null);
+  const [usedWords, setUsedWords] = useState([]);
+
+  const [showCongrats, setShowCongrats] = useState(false);
+  const [showEndOptions, setShowEndOptions] = useState(false);
+  const [shiftCongratsUp, setShiftCongratsUp] = useState(false);
+
+  function resetGame() {
+    setGuess("");
+    setAboveRows([]);
+    setBelowRows([]);
+    setCurrentRow(null);
+    setIsGameStarted(false);
+    setUsedWords([]);
+    setShowCongrats(false);
+    setShowEndOptions(false);
+    setShiftCongratsUp(false);
+  }
 
   return (
     <>
       <div className="home-container">
         <Header username={Cookies.get("username")} />
+
         {isGameStarted ? (
           <>
             <Inputs
@@ -33,6 +63,12 @@ function WordRank() {
               setAboveRows={setAboveRows}
               setBelowRows={setBelowRows}
               setCurrentRow={setCurrentRow}
+              usedWords={usedWords}
+              setUsedWords={setUsedWords}
+              setShowCongrats={setShowCongrats}
+              setShowEndOptions={setShowEndOptions}
+              setAnswer={setAnswer}
+              setShiftCongratsUp={setShiftCongratsUp}
             />
             <GameRows
               aboveRows={aboveRows}
@@ -49,8 +85,46 @@ function WordRank() {
             setCurrentRow={setCurrentRow}
           />
         )}
+
+        {(showCongrats || showEndOptions) && (
+          <div className="modal-wrapper">
+            {showCongrats && (
+              <Congratulate answer={answer} shiftUp={shiftCongratsUp} />
+            )}
+            {showEndOptions && (
+              <GameButtons resetGame={resetGame} navigate={navigate} />
+            )}
+          </div>
+        )}
       </div>
     </>
+  );
+}
+
+function Congratulate({ answer, shiftUp }) {
+  return (
+    <div className={`modal-box ${shiftUp ? "congrats-box" : ""}`}>
+      <h2>🎉 Congratulations! 🎉</h2>
+      <p>
+        Your answer is <strong>{answer}</strong>!
+      </p>
+    </div>
+  );
+}
+
+function GameButtons({ resetGame, navigate }) {
+  return (
+    <div className="modal-box">
+      <h3>Would you like to play again?</h3>
+      <div className="GameButtons">
+        <button className="btn btn-success me-3" onClick={resetGame}>
+          Play Again
+        </button>
+        <button className="btn btn-danger" onClick={() => navigate("/home")}>
+          Quit
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -100,8 +174,6 @@ function Categories({
       style={{ minHeight: "50vh" }}
     >
       <h2 className="mb-4">Select a Category</h2>
-
-      {/* Side-by-side row */}
       <div className="d-flex gap-3 align-items-center">
         <div className="dropdown">
           <button
@@ -129,7 +201,6 @@ function Categories({
             ))}
           </ul>
         </div>
-
         <button onClick={handleClick} className="btn btn-primary">
           Start Game
         </button>
@@ -145,14 +216,26 @@ function Inputs({
   setAboveRows,
   setBelowRows,
   setCurrentRow,
+  usedWords,
+  setUsedWords,
+  setShowCongrats,
+  setShowEndOptions,
+  setAnswer,
+  setShiftCongratsUp,
 }) {
   async function handleGuess() {
+    const normalizedGuess = guess.trim().toLowerCase();
+    if (usedWords.includes(normalizedGuess)) {
+      alert("You've already guessed that word!");
+      return;
+    }
+
     try {
       const response = await axios.post("/word_gameAPI.php", {
         serviceID: 2,
         user_id: 18,
         choice: selectedCategory,
-        guess: guess,
+        guess: normalizedGuess,
       });
 
       const data = response.data;
@@ -165,6 +248,8 @@ function Inputs({
           id: Date.now() + Math.random(),
         };
 
+        setUsedWords((prev) => [...prev, normalizedGuess]);
+
         if (row.diff > 0) {
           setAboveRows((prev) =>
             [...prev, row].sort((a, b) => b.diff - a.diff)
@@ -175,6 +260,15 @@ function Inputs({
           );
         } else {
           setCurrentRow(row);
+
+          setTimeout(() => {
+            setShowCongrats(true);
+          }, 1000);
+
+          setTimeout(() => {
+            setShiftCongratsUp(true);
+            setShowEndOptions(true);
+          }, 3000);
         }
 
         setGuess("");
@@ -196,12 +290,13 @@ function Inputs({
         value={guess}
         onChange={(e) => setGuess(e.target.value)}
       />
-      <button className="btn btn-primary " onClick={handleGuess}>
+      <button className="btn btn-primary btn-lg" onClick={handleGuess}>
         Play
       </button>
     </div>
   );
 }
+
 function GameRows({ aboveRows, currentRow, belowRows }) {
   const rowStyle = {
     display: "flex",
@@ -215,33 +310,29 @@ function GameRows({ aboveRows, currentRow, belowRows }) {
 
   const leftColStyle = {
     flex: 3,
-    backgroundColor: "#23797A", // dark teal
-    color: "#EDEDED",
+    backgroundColor: "#43A047",
+    color: "black",
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     padding: "8px 12px",
+    fontWeight: "bold",
   };
 
   const rightColStyle = {
     flex: 1,
-    backgroundColor: "#FFB74D", // soft orange
+    backgroundColor: "#FFB74D",
     color: "#000",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: "8px",
-  };
-
-  const correctGuessStyle = {
-    ...leftColStyle,
-    backgroundColor: "#43A047", // green for correct guess
+    fontWeight: "bold",
   };
 
   const renderRow = (row) => (
     <div key={row.id} style={rowStyle}>
-      <div style={row.diff === 0 ? correctGuessStyle : leftColStyle}>
-        {row.word}
-      </div>
+      <div style={leftColStyle}>{row.word}</div>
       <div style={rightColStyle}>{row.diff}</div>
     </div>
   );
