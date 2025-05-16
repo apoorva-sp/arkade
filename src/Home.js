@@ -4,7 +4,7 @@ import Header from "./components/Header";
 import Cookies from "js-cookie";
 import { useEffect, useRef } from "react";
 
-const Home = ({ username, onSelectGame }) => {
+const Home = () => {
   const navigate = useNavigate();
 
   const user_id = Cookies.get("user_id") ?? null;

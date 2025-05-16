@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./styles/wordle.css";
 import Header from "./components/Header.js";
+
 function WordleGrid({
   wordLength,
   guess,
@@ -100,17 +101,46 @@ export default function WordleGame() {
   const url = "/wordleAPI.php";
 
   const [isLoading, setIsLoading] = useState(false);
-
   const [wordLength, setWordLength] = useState(5);
   const [gamePlaying, setGamePlaying] = useState(false);
   const [first, setFirst] = useState(true);
   const [gameWon, setGameWon] = useState(false);
-
   const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState([]);
   const [bitmaps, setBitmaps] = useState([]);
   const [secret, setSecret] = useState("");
   const [lives, setLives] = useState(0);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (gamePlaying) {
+        event.preventDefault();
+        event.returnValue = ""; // Required for Chrome
+      }
+    };
+
+    const handlePopState = async () => {
+      if (gamePlaying) {
+        const confirmExit = window.confirm("Do you want to exit the game?");
+        if (confirmExit) {
+          await exitGame();
+        } else {
+          window.history.pushState(null, null, window.location.pathname);
+        }
+      }
+    };
+    if (gamePlaying) {
+      window.history.pushState(null, null, window.location.pathname);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [gamePlaying]);
 
   const WordleOptions = ({ first }) => (
     <div className="wordle-options-wrapper">
