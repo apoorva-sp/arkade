@@ -16,14 +16,6 @@ function WordRank() {
   const user_id = Cookies.get("user_id") ?? null;
   const alerted = useRef(false);
 
-  useEffect(() => {
-    if (user_id === null && !alerted.current) {
-      alerted.current = true;
-      alert("You have to enter a username at least to play");
-      navigate("/");
-    }
-  }, [user_id, navigate]);
-
   const [answer, setAnswer] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
@@ -32,10 +24,35 @@ function WordRank() {
   const [belowRows, setBelowRows] = useState([]);
   const [currentRow, setCurrentRow] = useState(null);
   const [usedWords, setUsedWords] = useState([]);
-
   const [showCongrats, setShowCongrats] = useState(false);
   const [showEndOptions, setShowEndOptions] = useState(false);
   const [shiftCongratsUp, setShiftCongratsUp] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [showAnswerIcon, setShowAnswerIcon] = useState(false);
+
+  useEffect(() => {
+    if (user_id === null && !alerted.current) {
+      alerted.current = true;
+      alert("You have to enter a username at least to play");
+      navigate("/");
+    }
+  }, [user_id, navigate]);
+
+  // ⚠️ Confirm on refresh, tab close or back
+  useEffect(() => {
+    if (!isGameStarted) return;
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = "Refreshing will restart the game. Are you sure?";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isGameStarted]);
 
   function resetGame() {
     setGuess("");
@@ -47,57 +64,65 @@ function WordRank() {
     setShowCongrats(false);
     setShowEndOptions(false);
     setShiftCongratsUp(false);
+    setShowAnswerIcon(false);
   }
 
   return (
-    <>
-      <div className="home-container">
-        <Header username={Cookies.get("username")} />
+    <div className="home-container">
+      <Header username={Cookies.get("username")} />
 
-        {isGameStarted ? (
-          <>
-            <Inputs
-              guess={guess}
-              setGuess={setGuess}
-              selectedCategory={selectedCategory}
-              setAboveRows={setAboveRows}
-              setBelowRows={setBelowRows}
-              setCurrentRow={setCurrentRow}
-              usedWords={usedWords}
-              setUsedWords={setUsedWords}
-              setShowCongrats={setShowCongrats}
-              setShowEndOptions={setShowEndOptions}
-              setAnswer={setAnswer}
-              setShiftCongratsUp={setShiftCongratsUp}
-            />
-            <GameRows
-              aboveRows={aboveRows}
-              belowRows={belowRows}
-              currentRow={currentRow}
-            />
-          </>
-        ) : (
-          <Categories
-            setAnswer={setAnswer}
-            setIsGameStarted={setIsGameStarted}
-            setSelectedCategory={setSelectedCategory}
+      {isGameStarted ? (
+        <>
+          <Inputs
+            guess={guess}
+            setGuess={setGuess}
             selectedCategory={selectedCategory}
+            setAboveRows={setAboveRows}
+            setBelowRows={setBelowRows}
             setCurrentRow={setCurrentRow}
+            usedWords={usedWords}
+            setUsedWords={setUsedWords}
+            setShowCongrats={setShowCongrats}
+            setShowEndOptions={setShowEndOptions}
+            setAnswer={setAnswer}
+            setShiftCongratsUp={setShiftCongratsUp}
+            setShowAnswerIcon={setShowAnswerIcon}
           />
-        )}
+          <GameRows
+            aboveRows={aboveRows}
+            belowRows={belowRows}
+            currentRow={currentRow}
+          />
+        </>
+      ) : (
+        <Categories
+          setAnswer={setAnswer}
+          setIsGameStarted={setIsGameStarted}
+          setSelectedCategory={setSelectedCategory}
+          selectedCategory={selectedCategory}
+          setCurrentRow={setCurrentRow}
+        />
+      )}
 
-        {(showCongrats || showEndOptions) && (
-          <div className="modal-wrapper">
-            {showCongrats && (
-              <Congratulate answer={answer} shiftUp={shiftCongratsUp} />
-            )}
-            {showEndOptions && (
-              <GameButtons resetGame={resetGame} navigate={navigate} />
-            )}
-          </div>
-        )}
-      </div>
-    </>
+      {(showCongrats || showEndOptions) && (
+        <div className="modal-wrapper">
+          {showCongrats && (
+            <Congratulate answer={answer} shiftUp={shiftCongratsUp} />
+          )}
+          {showEndOptions && (
+            <GameButtons resetGame={resetGame} navigate={navigate} />
+          )}
+        </div>
+      )}
+
+      {showAnswerIcon && (
+        <ViewAnswer
+          answer={answer}
+          setShowAnswer={setShowAnswer}
+          showAnswer={showAnswer}
+        />
+      )}
+    </div>
   );
 }
 
@@ -124,6 +149,50 @@ function GameButtons({ resetGame, navigate }) {
           Quit
         </button>
       </div>
+    </div>
+  );
+}
+
+function ViewAnswer({ answer, setShowAnswer, showAnswer }) {
+  return (
+    <div
+      style={{
+        marginTop: "24px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        width: "100%",
+      }}
+    >
+      {showAnswer && (
+        <div
+          style={{
+            marginTop: 8,
+            color: "white",
+            padding: "6px 16px",
+            fontWeight: "bold",
+            fontSize: "1.1rem",
+            textAlign: "center",
+            marginLeft: "8px",
+          }}
+        >
+          {answer}
+        </div>
+      )}
+      <button
+        onClick={() => setShowAnswer((prev) => !prev)}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          fontSize: "1.8rem",
+          color: "#555",
+          marginRight: "8px",
+        }}
+        title={showAnswer ? "Hide Answer" : "Show Answer"}
+      >
+        👁️
+      </button>
     </div>
   );
 }
@@ -222,9 +291,13 @@ function Inputs({
   setShowEndOptions,
   setAnswer,
   setShiftCongratsUp,
+  setShowAnswerIcon,
 }) {
+  const guessCount = useRef(0);
+
   async function handleGuess() {
     const normalizedGuess = guess.trim().toLowerCase();
+    if (!normalizedGuess) return;
     if (usedWords.includes(normalizedGuess)) {
       alert("You've already guessed that word!");
       return;
@@ -241,6 +314,12 @@ function Inputs({
       const data = response.data;
 
       if (data && data[1] && Array.isArray(data[1].guess)) {
+        guessCount.current++;
+
+        if (guessCount.current >= 5) {
+          setShowAnswerIcon(true);
+        }
+
         const lastGuess = data[1].guess[data[1].guess.length - 1];
         const row = {
           word: lastGuess.word,
@@ -260,11 +339,7 @@ function Inputs({
           );
         } else {
           setCurrentRow(row);
-
-          setTimeout(() => {
-            setShowCongrats(true);
-          }, 1000);
-
+          setTimeout(() => setShowCongrats(true), 1000);
           setTimeout(() => {
             setShiftCongratsUp(true);
             setShowEndOptions(true);
@@ -289,6 +364,12 @@ function Inputs({
         placeholder="Enter your guess"
         value={guess}
         onChange={(e) => setGuess(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleGuess();
+          }
+        }}
       />
       <button className="btn btn-primary btn-lg" onClick={handleGuess}>
         Play
