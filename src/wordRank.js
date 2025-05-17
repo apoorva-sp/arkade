@@ -155,40 +155,11 @@ function GameButtons({ resetGame, navigate }) {
 
 function ViewAnswer({ answer, setShowAnswer, showAnswer }) {
   return (
-    <div
-      style={{
-        marginTop: "24px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-end",
-        width: "100%",
-      }}
-    >
-      {showAnswer && (
-        <div
-          style={{
-            marginTop: 8,
-            color: "white",
-            padding: "6px 16px",
-            fontWeight: "bold",
-            fontSize: "1.1rem",
-            textAlign: "center",
-            marginLeft: "8px",
-          }}
-        >
-          {answer}
-        </div>
-      )}
+    <div className="answer-box">
+      {showAnswer && <div className="answer">{answer}</div>}
       <button
+        clannname="btnans"
         onClick={() => setShowAnswer((prev) => !prev)}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          fontSize: "1.8rem",
-          color: "#555",
-          marginRight: "8px",
-        }}
         title={showAnswer ? "Hide Answer" : "Show Answer"}
       >
         👁️
