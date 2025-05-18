@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import "./styles/homepage.css";
 import Header from "./components/Header";
+import API_URL from "./config";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export default function Profile() {
     setLoading(true);
 
     try {
-      const response = await axios.post("/usersAPI.php", {
+      const response = await axios.post(API_URL + "/usersAPI.php", {
         serviceID: 4,
         oldUsername: username,
         newUsername: newUsername.trim(),

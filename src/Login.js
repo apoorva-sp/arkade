@@ -4,7 +4,8 @@ import "./styles/loginstyle.css";
 import "./styles/loadingstyle.scss";
 import axios from "axios";
 import Cookies from "js-cookie";
-
+import { io } from "socket.io-client";
+import API_URL from "./config";
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +21,7 @@ const Login = () => {
     try {
       const serviceID = signUp ? 1 : 2;
       setPassword((prev) => (secure ? prev : ""));
-      const response = await axios.post("/usersAPI.php", {
+      const response = await axios.post(API_URL + "/usersAPI.php", {
         username: trimmedUsername,
         password,
         serviceID,
@@ -29,6 +30,7 @@ const Login = () => {
       if (response.data.code === 0) {
         Cookies.set("username", trimmedUsername);
         Cookies.set("user_id", response.data.user_id);
+
         navigate("/home");
       } else {
         alert(response.data.message);

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./styles/wordle.css";
 import Header from "./components/Header.js";
+import API_URL from "./config.js";
 
 function WordleGrid({
   wordLength,
@@ -98,7 +99,7 @@ export default function WordleGame() {
     }
   }, [user_id, navigate]);
 
-  const url = "/wordleAPI.php";
+  const url = API_URL + "/wordleAPI.php";
 
   const [isLoading, setIsLoading] = useState(false);
   const [wordLength, setWordLength] = useState(5);

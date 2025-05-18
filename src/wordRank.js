@@ -4,13 +4,14 @@ import axios from "axios";
 import Header from "./components/Header";
 import Cookies from "js-cookie";
 import "./styles/wordRank.css";
+import API_URL from "./config";
 
 const Choices = [
   { choice: "country" },
   { choice: "fruits" },
   { choice: "states" },
 ];
-
+const url = API_URL + "/word_gameAPI.php";
 function WordRank() {
   const navigate = useNavigate();
   const user_id = Cookies.get("user_id") ?? null;
@@ -182,7 +183,7 @@ function Categories({
     }
 
     try {
-      const response = await axios.post("/word_gameAPI.php", {
+      const response = await axios.post(url, {
         serviceID: 1,
         user_id: 18,
         choice: selectedCategory,
@@ -275,7 +276,7 @@ function Inputs({
     }
 
     try {
-      const response = await axios.post("/word_gameAPI.php", {
+      const response = await axios.post(url, {
         serviceID: 2,
         user_id: 18,
         choice: selectedCategory,
