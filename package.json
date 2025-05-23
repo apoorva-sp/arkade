@@ -1,0 +1,74 @@
+{
+  "name": "arkade",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A collection of mini games built with MERN stack",
+  "main": "index.js",
+  "author": "Aditya Anirudh & Apoorva",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apoorva-sp/arkade.git"
+  },
+  "bugs": {
+    "url": "https://github.com/apoorva-sp/arkade/issues"
+  },
+  "keywords": [
+    "online",
+    "games",
+    "mern",
+    "arkade",
+    "multiplayer"
+  ],
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "proxy": "node simple-proxy.js",
+    "dev": "concurrently \"npm run start\" \"npm run proxy\""
+  },
+  "dependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.9.0",
+    "bootstrap": "^5.3.5",
+    "concurrently": "^9.1.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "js-cookie": "^3.0.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.0",
+    "react-scripts": "^5.0.1",
+    "sass": "^1.86.3",
+    "socket.io-client": "^4.8.1",
+    "web-vitals": "^2.1.4",
+    "wouter": "^3.6.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "gitTest": "Temporary field to test Git tracking. Safe to remove."
+}

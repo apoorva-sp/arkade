@@ -1,0 +1,162 @@
+.wordle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.wordle-row {
+  display: flex;
+  gap: 10px;
+}
+
+.wordle-box {
+  width: 48px;
+  height: 48px;
+  border: 2px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: white;
+  margin: 2px;
+}
+
+/* Color-coded feedback boxes */
+.green {
+  background-color: #6aaa64;
+  color: white;
+  border-color: #6aaa64;
+}
+
+.yellow {
+  background-color: #c9b458;
+  color: white;
+  border-color: #c9b458;
+}
+
+.gray {
+  background-color: #787c7e;
+  color: white;
+  border-color: #787c7e;
+}
+
+/* Start game button */
+.start-game-button {
+  background-color: #28a745; /* Bootstrap green */
+  color: white;
+  font-size: 18px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+.start-game-button:hover {
+  background-color: #218838; /* Darker green */
+}
+
+/* Start game button */
+.exit-game-button {
+  background-color: #ff0000; /* Bootstrap green */
+  color: white;
+  font-size: 18px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+.exit-game-button:hover {
+  background-color: #ff0045; /* Darker green */
+}
+
+/* Dropdown styles */
+.wordle-dropdown {
+  padding: 10px 16px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #333;
+  appearance: none;
+  cursor: pointer;
+  margin-right: 12px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.2s ease;
+}
+
+.wordle-dropdown:hover,
+.wordle-dropdown:focus {
+  border-color: #28a745;
+  outline: none;
+}
+
+/* Containers for options and guess input */
+.wordle-options-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.wordle-options-wrapper {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 100px;
+  gap: 20px;
+  font-size: 18px;
+}
+.wordle-select-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wordle-guess-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  gap: 20px;
+  font-size: 18px;
+}
+
+/* Guess input */
+.guess-input {
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 2px solid #4caf50;
+  border-radius: 6px;
+  outline: none;
+  width: 150px;
+}
+
+/* Guess submit button */
+.guess-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.guess-button:hover {
+  background-color: #45a049;
+}
