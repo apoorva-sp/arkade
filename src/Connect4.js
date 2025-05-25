@@ -13,6 +13,7 @@ const ConnectFourGame = ({ socket }) => {
   const [player1, setPlayer1] = useState("");
   const [player2, setPlayer2] = useState("");
   const [currentPlayer, setCurrentPlayer] = useState("");
+  const [gamePlaying, setGamePlaying] = useState(false);
   const [board, setBoard] = useState(
     Array.from({ length: 6 }, () => Array(7).fill(0))
   );
@@ -30,6 +31,7 @@ const ConnectFourGame = ({ socket }) => {
           const player = data.name;
           if (player !== username) {
             setPlayer2(player);
+            setGamePlaying(true);
           }
         } catch (err) {
           console.error("Failed to parse joined_room data:", err);
@@ -105,6 +107,7 @@ const ConnectFourGame = ({ socket }) => {
       setPlayer2(game.player2);
       setCurrentPlayer(game.currentPlayer);
       setGameVisible(true);
+      setGamePlaying(false);
     } else {
       alert(res.data.message);
     }
@@ -124,6 +127,7 @@ const ConnectFourGame = ({ socket }) => {
       setPlayer2(game.player2);
       setCurrentPlayer(game.currentPlayer);
       setGameVisible(true);
+      setGamePlaying(true);
     } else {
       alert(res.data.message);
     }
@@ -178,33 +182,78 @@ const ConnectFourGame = ({ socket }) => {
   };
 
   return (
-    <div style={{ padding: "1rem" }}>
+    <div className="container" style={{ padding: "1rem" }}>
       {!gameVisible ? (
         <>
-          <button onClick={hostGame}>Host Game</button>
-          <button onClick={joinGame}>Join Game</button>
+          <button
+            onClick={hostGame}
+            className="column-button"
+            style={{ width: 120, marginBottom: 10 }}
+          >
+            Host Game
+          </button>
+          <button
+            onClick={joinGame}
+            className="column-button"
+            style={{ width: 120 }}
+          >
+            Join Game
+          </button>
         </>
       ) : (
         <>
-          <h3>Room Code: {roomCode}</h3>
-          <p>Player 1: {player1}</p>
-          <p>Player 2: {player2}</p>
-          <p>Current Player: {currentPlayer}</p>
-          <div>{renderBoard()}</div>
-          <div>
-            {Array(7)
-              .fill(0)
-              .map((_, idx) => (
-                <button
-                  key={idx}
-                  disabled={isFilled[idx] === 1}
-                  onClick={() => playGame(idx)}
-                >
-                  ↓
-                </button>
-              ))}
+          <div className="status-container">
+            <h3>Room Code: {roomCode}</h3>
+            <p>Player 1: {player1}</p>
+            <p>Player 2: {player2}</p>
+            <div className="current-player">
+              <span>Current Player:{currentPlayer}</span>
+            </div>
           </div>
-          <button onClick={() => leaveGame()}>Leave Game</button>
+
+          <div className="board-container">
+            <div className="board-content">
+              <div className="grid">
+                {/* Column buttons */}
+                {Array(7)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <button
+                      key={idx}
+                      disabled={isFilled[idx] === 1 || !gamePlaying}
+                      onClick={() => playGame(idx)}
+                      className="column-button"
+                    >
+                      ↓
+                    </button>
+                  ))}
+
+                {/* Board cells */}
+                {board.map((row, rowIdx) =>
+                  row.map((cell, colIdx) => (
+                    <div key={`${rowIdx}-${colIdx}`} className="cell">
+                      {cell !== 0 && (
+                        <div
+                          className="piece"
+                          style={{
+                            backgroundColor: cell === 1 ? "red" : "yellow",
+                          }}
+                        />
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => leaveGame()}
+            className="reset-button"
+            style={{ marginTop: 16 }}
+          >
+            Leave Game
+          </button>
         </>
       )}
     </div>

@@ -1,0 +1,144 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  font-family: Arial, sans-serif;
+}
+
+.status-container {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.current-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.player-indicator-red {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: red;
+}
+
+.player-indicator-yellow {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: yellow;
+}
+
+.alert-box {
+  padding: 16px;
+  border: 1px solid;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background-color: #f8f9fa;
+}
+
+.alert-box-winner {
+  border-color: #28a745;
+}
+
+.alert-box-neutral {
+  border-color: #6c757d;
+}
+
+.winner-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.winner-indicator-red {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: red;
+}
+
+.winner-indicator-yellow {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: yellow;
+}
+
+.board-container {
+  background-color: #2563eb;
+  padding: 8px;
+  border: 4px solid #1e40af;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.board-content {
+  padding: 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.column-button {
+  height: 32px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.column-button:hover {
+  background-color: #1d4ed8;
+}
+
+.column-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cell {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell-winning {
+  box-shadow: 0 0 0 4px #22c55e, 0 0 0 6px white;
+}
+
+.piece {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.reset-button {
+  margin-top: 16px;
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background-color: white;
+  transition: background-color 0.2s;
+}
+
+.reset-button:hover {
+  background-color: #f3f4f6;
+}
