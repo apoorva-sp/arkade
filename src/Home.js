@@ -136,8 +136,9 @@ const Home = () => {
         </div>
       </div>
       <div className="home-container2">
-        <button className="feedback-btn">Give Feedback</button>
-        <p className="username">There are 4 games, you can add more!</p>
+        <a className="username" href="mailto:contact@arkade.com">
+          There are 3 games, you can add more! mail us at arkade@gmail.com
+        </a>
       </div>
     </>
   );

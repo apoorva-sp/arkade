@@ -162,25 +162,6 @@ const ConnectFourGame = ({ socket }) => {
     }
   };
 
-  const renderBoard = () => {
-    return board.map((row, rowIdx) => (
-      <div key={rowIdx} style={{ display: "flex" }}>
-        {row.map((cell, colIdx) => (
-          <div
-            key={colIdx}
-            style={{
-              width: 40,
-              height: 40,
-              backgroundColor:
-                cell === 1 ? "red" : cell === 2 ? "yellow" : "lightgray",
-              border: "1px solid black",
-            }}
-          />
-        ))}
-      </div>
-    ));
-  };
-
   return (
     <div className="container" style={{ padding: "1rem" }}>
       {!gameVisible ? (
