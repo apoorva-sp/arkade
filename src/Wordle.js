@@ -208,7 +208,7 @@ export default function WordleGame() {
             setGamePlaying(false);
             setFirst(false);
           }
-        } else if (lives == 1) {
+        } else if (lives === 1) {
           setGameWon(false);
           setGamePlaying(false);
           setFirst(false);
