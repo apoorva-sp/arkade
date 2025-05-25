@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -16,7 +16,7 @@ function WordleGrid({
   playGuessWord,
 }) {
   const handleKeyPress = async (e) => {
-    if (e.key == "Enter") {
+    if (e.key === "Enter") {
       playGuessWord();
     }
   };
@@ -120,37 +120,6 @@ export default function WordleGame() {
   const [secret, setSecret] = useState("");
   const [lives, setLives] = useState(0);
 
-  useEffect(() => {
-    const handleBeforeUnload = (event) => {
-      if (gamePlaying) {
-        event.preventDefault();
-        event.returnValue = ""; // Required for Chrome
-      }
-    };
-
-    const handlePopState = async () => {
-      if (gamePlaying) {
-        const confirmExit = window.confirm("Do you want to exit the game?");
-        if (confirmExit) {
-          await exitGame();
-        } else {
-          window.history.pushState(null, null, window.location.pathname);
-        }
-      }
-    };
-    if (gamePlaying) {
-      window.history.pushState(null, null, window.location.pathname);
-    }
-
-    window.addEventListener("popstate", handlePopState);
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [gamePlaying]);
-
   const WordleOptions = ({ first }) => (
     <div className="wordle-options-wrapper">
       <div className="wordle-select-wrapper">
@@ -205,7 +174,7 @@ export default function WordleGame() {
         setGuesses([]);
         setBitmaps([]);
         setSecret("");
-        setLives(response.data.lives || 0);
+        setLives(response.data.lives || wordLength);
         setGuess("");
       } else {
         alert(response.data.message);
@@ -239,6 +208,10 @@ export default function WordleGame() {
             setGamePlaying(false);
             setFirst(false);
           }
+        } else if (lives == 1) {
+          setGameWon(false);
+          setGamePlaying(false);
+          setFirst(false);
         }
       } else {
         alert(response.data.message);
@@ -279,7 +252,7 @@ export default function WordleGame() {
     setIsLoading(false);
   };
 
-  const exitGame = async () => {
+  const exitGame = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await axios.post(url, {
@@ -292,12 +265,43 @@ export default function WordleGame() {
         alert(response.data.message);
       }
     } catch (error) {
-      console.error("Starting game error:", error);
+      console.error("Exit game error:", error);
       alert("Something went wrong. Please try again.");
     }
     setIsLoading(false);
-  };
+  }, [url, user_id, navigate]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (gamePlaying) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+
+    const handlePopState = async () => {
+      if (gamePlaying) {
+        const confirmExit = window.confirm("Do you want to exit the game?");
+        if (confirmExit) {
+          await exitGame();
+        } else {
+          window.history.pushState(null, null, window.location.pathname);
+        }
+      }
+    };
+
+    if (gamePlaying) {
+      window.history.pushState(null, null, window.location.pathname);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [gamePlaying, exitGame]);
   return (
     <div className="home-container">
       <Header username={Cookies.get("username")} />
