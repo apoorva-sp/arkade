@@ -1,370 +1,214 @@
-"use client";
+import { useEffect, useState, useCallback } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+import "./styles/connect4.css";
 
-import React, { useState } from "react";
+const ConnectFourGame = ({ socket }) => {
+  const navigate = useNavigate();
+  const username = Cookies.get("username");
+  const url = "https://arcade.pivotpt.in/connectFourAPI.php";
 
-function ConnectFourApp() {
-  // Constants
-  const ROWS = 6;
-  const COLS = 7;
-  const EMPTY = null;
-  const PLAYER_1 = "red";
-  const PLAYER_2 = "yellow";
+  const [roomCode, setRoomCode] = useState("");
+  const [player1, setPlayer1] = useState("");
+  const [player2, setPlayer2] = useState("");
+  const [currentPlayer, setCurrentPlayer] = useState("");
+  const [board, setBoard] = useState(
+    Array.from({ length: 6 }, () => Array(7).fill(0))
+  );
+  const [isFilled, setIsFilled] = useState(Array(7).fill(0));
+  const [gameVisible, setGameVisible] = useState(false);
 
-  // Game state
-  const [board, setBoard] = useState(createEmptyBoard());
-  const [currentPlayer, setCurrentPlayer] = useState(PLAYER_1);
-  const [winner, setWinner] = useState(null);
-  const [isDraw, setIsDraw] = useState(false);
-  const [winningCells, setWinningCells] = useState([]);
-  const [gameOver, setGameOver] = useState(false);
+  // === Socket Handlers ===
+  const onJoinedRoom = useCallback(
+    (args) => {
+      if (args && typeof args === "string") {
+        try {
+          const data = JSON.parse(args);
+          console.log(data.name + " joined room");
 
-  // Create an empty board
-  function createEmptyBoard() {
-    return Array(ROWS)
-      .fill(null)
-      .map(() => Array(COLS).fill(EMPTY));
-  }
-
-  // Handle column click
-  const handleColumnClick = (colIndex) => {
-    if (gameOver) return;
-
-    // Find the lowest empty cell in the column
-    const newBoard = [...board];
-    for (let rowIndex = ROWS - 1; rowIndex >= 0; rowIndex--) {
-      if (newBoard[rowIndex][colIndex] === EMPTY) {
-        newBoard[rowIndex][colIndex] = currentPlayer;
-        setBoard(newBoard);
-
-        // Check for win
-        const winResult = checkWin(newBoard, rowIndex, colIndex, currentPlayer);
-        if (winResult.win) {
-          setWinner(currentPlayer);
-          setWinningCells(winResult.cells);
-          setGameOver(true);
-          return;
-        }
-
-        // Check for draw
-        if (checkDraw(newBoard)) {
-          setIsDraw(true);
-          setGameOver(true);
-          return;
-        }
-
-        // Switch player
-        setCurrentPlayer(currentPlayer === PLAYER_1 ? PLAYER_2 : PLAYER_1);
-        return;
-      }
-    }
-  };
-
-  // Check if the board is full (draw)
-  const checkDraw = (board) => {
-    return board[0].every((cell) => cell !== EMPTY);
-  };
-
-  // Check for win
-  const checkWin = (board, row, col, player) => {
-    const directions = [
-      [0, 1], // horizontal
-      [1, 0], // vertical
-      [1, 1], // diagonal down-right
-      [1, -1], // diagonal down-left
-    ];
-
-    for (const [dx, dy] of directions) {
-      const cells = [];
-
-      // Check in both directions
-      for (let i = -3; i <= 3; i++) {
-        const newRow = row + i * dx;
-        const newCol = col + i * dy;
-
-        if (
-          newRow >= 0 &&
-          newRow < ROWS &&
-          newCol >= 0 &&
-          newCol < COLS &&
-          board[newRow][newCol] === player
-        ) {
-          cells.push([newRow, newCol]);
-
-          // If we have 4 consecutive cells, we have a win
-          if (cells.length >= 4) {
-            // Check if they're consecutive
-            let consecutive = true;
-            for (let j = 1; j < 4; j++) {
-              const prevRow = cells[j - 1][0];
-              const prevCol = cells[j - 1][1];
-              const currRow = cells[j][0];
-              const currCol = cells[j][1];
-
-              if (
-                Math.abs(currRow - prevRow) > 1 ||
-                Math.abs(currCol - prevCol) > 1
-              ) {
-                consecutive = false;
-                break;
-              }
-            }
-
-            if (consecutive) {
-              return { win: true, cells: cells.slice(0, 4) };
-            }
+          const player = data.name;
+          if (player !== username) {
+            setPlayer2(player);
           }
-        } else {
-          cells.length = 0;
+        } catch (err) {
+          console.error("Failed to parse joined_room data:", err);
         }
       }
+    },
+    [username]
+  );
+
+  const onGamePlayed = useCallback((data) => {
+    const gameState = data.game_state;
+    setCurrentPlayer(gameState.currentPlayer);
+    setBoard(gameState.board);
+    setIsFilled(gameState.isFilled);
+  }, []);
+
+  const onGameWon = useCallback(
+    (data) => {
+      const gameState = data.game_state;
+      setBoard(gameState.board);
+      const winner = gameState.winner;
+      alert(winner === username ? "You Won :D" : "You Lost :(");
+      navigate("/home");
+    },
+    [username, navigate]
+  );
+
+  const onGameDraw = useCallback(() => {
+    alert("Game Drawn");
+    navigate("/home");
+  }, [navigate]);
+
+  const onPlayerLeft = useCallback(
+    (data) => {
+      if (!data || !data.username) return;
+
+      if (data.username !== username) {
+        alert("Opponent left. You won!");
+        navigate("/home");
+      }
+    },
+    [username, navigate]
+  );
+
+  // === Socket Registration ===
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("joined_room", onJoinedRoom);
+    socket.on("game_played", onGamePlayed);
+    socket.on("game_won", onGameWon);
+    socket.on("game_draw", onGameDraw);
+    socket.on("player_left", onPlayerLeft);
+
+    return () => {
+      socket.off("joined_room", onJoinedRoom);
+      socket.off("game_played", onGamePlayed);
+      socket.off("game_won", onGameWon);
+      socket.off("game_draw", onGameDraw);
+      socket.off("player_left", onPlayerLeft);
+    };
+  }, [socket, onJoinedRoom, onGamePlayed, onGameWon, onGameDraw, onPlayerLeft]);
+
+  // === Game Logic ===
+  const hostGame = async () => {
+    const body = { serviceID: 1, username };
+    const res = await axios.post(url, body);
+    if (res.data.code === 0) {
+      const game = res.data.game_state;
+      setRoomCode(res.data.room_code);
+      socket.emit("join_room", res.data.room_code);
+      setPlayer1(game.player1);
+      setPlayer2(game.player2);
+      setCurrentPlayer(game.currentPlayer);
+      setGameVisible(true);
+    } else {
+      alert(res.data.message);
     }
-
-    return { win: false, cells: [] };
   };
 
-  // Reset the game
-  const resetGame = () => {
-    setBoard(createEmptyBoard());
-    setCurrentPlayer(PLAYER_1);
-    setWinner(null);
-    setIsDraw(false);
-    setWinningCells([]);
-    setGameOver(false);
+  const joinGame = async () => {
+    const code = prompt("Enter Room Code:");
+    if (!code) return;
+
+    const body = { serviceID: 2, username, room_code: code };
+    const res = await axios.post(url, body);
+    if (res.data.code === 0) {
+      const game = res.data.game_state;
+      setRoomCode(res.data.room_code);
+      socket.emit("join_room", res.data.room_code);
+      setPlayer1(game.player1);
+      setPlayer2(game.player2);
+      setCurrentPlayer(game.currentPlayer);
+      setGameVisible(true);
+    } else {
+      alert(res.data.message);
+    }
   };
 
-  // Determine if a cell is part of the winning combination
-  const isWinningCell = (row, col) => {
-    return winningCells.some(([r, c]) => r === row && c === col);
+  const playGame = async (column) => {
+    const body = {
+      serviceID: 3,
+      username,
+      room_code: roomCode,
+      column,
+    };
+    const res = await axios.post(url, body);
+    if (![0, 80, 81].includes(res.data.code)) {
+      alert(res.data.message);
+    }
   };
 
-  // Styles
-  const styles = {
-    container: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: "16px",
-      fontFamily: "Arial, sans-serif",
-    },
-    statusContainer: {
-      marginBottom: "16px",
-      textAlign: "center",
-    },
-    currentPlayer: {
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      justifyContent: "center",
-    },
-    playerIndicator: {
-      width: "24px",
-      height: "24px",
-      borderRadius: "50%",
-      backgroundColor: currentPlayer === PLAYER_1 ? "red" : "yellow",
-    },
-    alertBox: {
-      padding: "16px",
-      border: "1px solid",
-      borderRadius: "8px",
-      marginBottom: "16px",
-      backgroundColor: "#f8f9fa",
-      borderColor: winner ? "#28a745" : "#6c757d",
-    },
-    winnerText: {
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-    },
-    winnerIndicator: {
-      width: "24px",
-      height: "24px",
-      borderRadius: "50%",
-      backgroundColor: winner === PLAYER_1 ? "red" : "yellow",
-    },
-    boardContainer: {
-      backgroundColor: "#2563eb", // blue-600
-      padding: "8px",
-      border: "4px solid #1e40af", // blue-800
-      borderRadius: "8px",
-      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-    },
-    boardContent: {
-      padding: "8px",
-    },
-    grid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(7, 1fr)",
-      gap: "8px",
-    },
-    columnButton: {
-      height: "32px",
-      backgroundColor: "#3b82f6", // blue-500
-      color: "white",
-      border: "none",
-      borderRadius: "4px",
-      cursor: "pointer",
-      transition: "background-color 0.2s",
-    },
-    columnButtonHover: {
-      backgroundColor: "#1d4ed8", // blue-700
-    },
-    columnButtonDisabled: {
-      opacity: 0.5,
-      cursor: "not-allowed",
-    },
-    cell: {
-      width: "48px",
-      height: "48px",
-      borderRadius: "50%",
-      backgroundColor: "#bfdbfe", // blue-200
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    cellWinning: {
-      boxShadow: "0 0 0 4px #22c55e, 0 0 0 6px white", // green-500
-    },
-    piece: {
-      width: "40px",
-      height: "40px",
-      borderRadius: "50%",
-      transition: "all 0.3s",
-    },
-    resetButton: {
-      marginTop: "16px",
-      padding: "8px 16px",
-      border: "1px solid #d1d5db",
-      borderRadius: "4px",
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      cursor: "pointer",
-      backgroundColor: "white",
-      transition: "background-color 0.2s",
-    },
-    resetButtonHover: {
-      backgroundColor: "#f3f4f6",
-    },
+  const leaveGame = async (proper = false) => {
+    const body = {
+      serviceID: proper ? 5 : 4,
+      username,
+      room_code: roomCode,
+    };
+    const res = await axios.post(url, body);
+    if (res.data.code === 0) {
+      socket.emit("leave_room", roomCode);
+      setGameVisible(false);
+      navigate("/home");
+    } else {
+      alert(res.data.message);
+    }
+  };
+
+  const renderBoard = () => {
+    return board.map((row, rowIdx) => (
+      <div key={rowIdx} style={{ display: "flex" }}>
+        {row.map((cell, colIdx) => (
+          <div
+            key={colIdx}
+            style={{
+              width: 40,
+              height: 40,
+              backgroundColor:
+                cell === 1 ? "red" : cell === 2 ? "yellow" : "lightgray",
+              border: "1px solid black",
+            }}
+          />
+        ))}
+      </div>
+    ));
   };
 
   return (
-    <div style={styles.container}>
-      {/* Game status */}
-      <div style={styles.statusContainer}>
-        {!gameOver && (
-          <div style={styles.currentPlayer}>
-            <span>Current Player:</span>
-            <div style={styles.playerIndicator} />
-          </div>
-        )}
-
-        {winner && (
-          <div style={styles.alertBox}>
-            <div style={{ fontWeight: "bold" }}>Winner!</div>
-            <div style={styles.winnerText}>
-              Player
-              <div style={styles.winnerIndicator} />
-              has won the game!
-            </div>
-          </div>
-        )}
-
-        {isDraw && (
-          <div style={styles.alertBox}>
-            <div style={{ fontWeight: "bold" }}>Draw!</div>
-            <div>The game ended in a draw.</div>
-          </div>
-        )}
-      </div>
-
-      {/* Game board */}
-      <div style={styles.boardContainer}>
-        <div style={styles.boardContent}>
-          <div style={styles.grid}>
-            {/* Column buttons */}
-            {Array(COLS)
-              .fill(null)
-              .map((_, colIndex) => (
+    <div style={{ padding: "1rem" }}>
+      {!gameVisible ? (
+        <>
+          <button onClick={hostGame}>Host Game</button>
+          <button onClick={joinGame}>Join Game</button>
+        </>
+      ) : (
+        <>
+          <h3>Room Code: {roomCode}</h3>
+          <p>Player 1: {player1}</p>
+          <p>Player 2: {player2}</p>
+          <p>Current Player: {currentPlayer}</p>
+          <div>{renderBoard()}</div>
+          <div>
+            {Array(7)
+              .fill(0)
+              .map((_, idx) => (
                 <button
-                  key={`col-${colIndex}`}
-                  onClick={() => handleColumnClick(colIndex)}
-                  disabled={board[0][colIndex] !== EMPTY || gameOver}
-                  style={{
-                    ...styles.columnButton,
-                    ...(board[0][colIndex] !== EMPTY || gameOver
-                      ? styles.columnButtonDisabled
-                      : {}),
-                  }}
-                  onMouseOver={(e) => {
-                    if (board[0][colIndex] === EMPTY && !gameOver) {
-                      e.currentTarget.style.backgroundColor =
-                        styles.columnButtonHover.backgroundColor;
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      styles.columnButton.backgroundColor;
-                  }}
+                  key={idx}
+                  disabled={isFilled[idx] === 1}
+                  onClick={() => playGame(idx)}
                 >
                   ↓
                 </button>
               ))}
-
-            {/* Game cells */}
-            {board.map((row, rowIndex) =>
-              row.map((cell, colIndex) => (
-                <div
-                  key={`${rowIndex}-${colIndex}`}
-                  style={{
-                    ...styles.cell,
-                    ...(isWinningCell(rowIndex, colIndex)
-                      ? styles.cellWinning
-                      : {}),
-                  }}
-                >
-                  {cell && (
-                    <div
-                      style={{
-                        ...styles.piece,
-                        backgroundColor: cell === PLAYER_1 ? "red" : "yellow",
-                      }}
-                    />
-                  )}
-                </div>
-              ))
-            )}
           </div>
-        </div>
-      </div>
-
-      {/* Reset button */}
-      <button
-        onClick={resetGame}
-        style={styles.resetButton}
-        onMouseOver={(e) => {
-          e.currentTarget.style.backgroundColor =
-            styles.resetButtonHover.backgroundColor;
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.backgroundColor = "white";
-        }}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38" />
-        </svg>
-        Reset Game
-      </button>
+          <button onClick={() => leaveGame()}>Leave Game</button>
+        </>
+      )}
     </div>
   );
-}
-export default ConnectFourApp;
+};
+
+export default ConnectFourGame;

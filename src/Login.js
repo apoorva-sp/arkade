@@ -6,7 +6,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { io } from "socket.io-client";
 import API_URL from "./config";
-const Login = () => {
+const Login = ({ setSocket }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [signUp, setSignUp] = useState(true);
@@ -30,7 +30,15 @@ const Login = () => {
       if (response.data.code === 0) {
         Cookies.set("username", trimmedUsername);
         Cookies.set("user_id", response.data.user_id);
-
+        const newSocket = io("https://arcade.pivotpt.in", {
+          transports: ["websocket"],
+          query: {
+            name: trimmedUsername,
+            email: "",
+          },
+        });
+        newSocket.connect();
+        setSocket(newSocket);
         navigate("/home");
       } else {
         alert(response.data.message);
