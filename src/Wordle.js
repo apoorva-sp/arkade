@@ -221,32 +221,21 @@ export default function WordleGame() {
       if (response.data.code === 0) {
         setSecret(response.data.secret);
         setLives(response.data.lives);
-        setGamePlaying(response.data.playing);
         setGuesses(response.data.guesses);
-        setGuess("");
         let newBitmaps = response.data.bitmaps;
-        if (typeof newBitmaps === "string") {
-          try {
-            newBitmaps = JSON.parse(newBitmaps.replace(/"\s+"/g, '", "'));
-          } catch {
-            newBitmaps = newBitmaps
-              .replace(/[\[\]"]/g, "")
-              .split(/\s+/)
-              .filter((item) => item.length > 0);
-          }
-        }
         setBitmaps(newBitmaps);
 
-        if (!response.data.playing) {
-          setGamePlaying(false);
+        if (response.data.playing) {
           if (guess.toLowerCase() === response.data.secret.toLowerCase()) {
             setGameWon(true);
+            setGamePlaying(false);
+            setFirst(false);
           }
-          setFirst(false);
         }
       } else {
         alert(response.data.message);
       }
+      setGuess("");
     } catch (error) {
       console.error(error);
       alert("Something went wrong. Please try again.");
@@ -274,6 +263,8 @@ export default function WordleGame() {
         alert(response.data.message);
       }
     } catch (error) {
+      exitGame();
+      handleStart();
       console.error("Starting game error:", error);
       alert("Something went wrong. Please try again.");
     }
@@ -285,7 +276,6 @@ export default function WordleGame() {
     try {
       const response = await axios.post(url, {
         user_id,
-        length: wordLength,
         serviceID: 3,
       });
       if (response.data.code === 0) {

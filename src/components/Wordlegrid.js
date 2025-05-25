@@ -14,17 +14,14 @@ export default function WordleGrid({
       {guesses.map((word, rowIndex) => (
         <div key={rowIndex} className="wordle-row">
           {word.split("").map((char, colIndex) => {
-            // Get the correct bitmap string for this row
             const rowBitmap = bitmaps[rowIndex] || "";
-            // Get the individual character from the bitmap string
             const status = rowBitmap.charAt(colIndex);
-            
+
             let className = "wordle-box ";
-            // Change comparison to check for the correct values
             if (status === "2") className += "green";
             else if (status === "1") className += "yellow";
-            else if (status === "0") className += "gray"; // This is the key change
-            
+            else if (status === "0") className += "gray";
+
             return (
               <div key={colIndex} className={className}>
                 {char}
@@ -33,9 +30,15 @@ export default function WordleGrid({
           })}
         </div>
       ))}
-      
+
       {/* Current guess row */}
-      <div className="wordle-guess-wrapper">
+      <form
+        className="wordle-guess-wrapper"
+        onSubmit={(e) => {
+          e.preventDefault(); // Prevent page reload
+          if (guess.length === wordLength) guessWord();
+        }}
+      >
         <label htmlFor="guessInput">Enter Your Guess:</label>
         <input
           type="text"
@@ -43,20 +46,20 @@ export default function WordleGrid({
           className="guess-input"
           value={guess}
           onChange={(e) => {
-            const value = e.target.value.toUpperCase(); // Auto-capitalize
+            const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
             if (value.length <= wordLength) setGuess(value);
           }}
           maxLength={wordLength}
+          autoFocus
         />
-        <button 
-          type="button" 
-          className="guess-button" 
-          onClick={guessWord} 
+        <button
+          type="submit"
+          className="guess-button"
           disabled={guess.length !== wordLength}
         >
           Guess
         </button>
-      </div>
+      </form>
     </div>
   );
 }
