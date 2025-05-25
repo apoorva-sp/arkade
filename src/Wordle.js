@@ -13,7 +13,14 @@ function WordleGrid({
   guessWord,
   guesses,
   bitmaps,
+  playGuessWord,
 }) {
+  const handleKeyPress = async (e) => {
+    if (e.key == "Enter") {
+      playGuessWord();
+    }
+  };
+
   const totalRows =
     guesses.length < wordLength + 1 ? wordLength + 1 : guesses.length + 1;
 
@@ -70,6 +77,7 @@ function WordleGrid({
           id="guessInput"
           className="guess-input"
           value={guess}
+          onKeyDown={handleKeyPress}
           onChange={(e) => {
             const val = e.target.value.toLowerCase();
             if (val.length <= wordLength && /^[a-z]*$/.test(val)) setGuess(val);
@@ -304,6 +312,7 @@ export default function WordleGame() {
             guessWord={guessWord}
             guesses={guesses}
             bitmaps={bitmaps}
+            playGuessWord={guessWord}
           />
         </>
       ) : !first ? (
