@@ -91,6 +91,17 @@ export default function Profile() {
               Update Username
             </button>
           </form>
+          <button
+            onClick={() => {
+              Cookies.remove("username");
+              Cookies.remove("user_id");
+              navigate("/");
+            }}
+            className="profile-button"
+            style={{ marginTop: "1rem" }}
+          >
+            Logout
+          </button>
         </div>
       </div>
     </div>

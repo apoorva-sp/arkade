@@ -20,81 +20,6 @@ const ConnectFourGame = ({ socket }) => {
   const [isFilled, setIsFilled] = useState(Array(7).fill(0));
   const [gameVisible, setGameVisible] = useState(false);
 
-  // === Socket Handlers ===
-  const onJoinedRoom = useCallback(
-    (args) => {
-      if (args && typeof args === "string") {
-        try {
-          const data = JSON.parse(args);
-          console.log(data.name + " joined room");
-
-          const player = data.name;
-          if (player !== username) {
-            setPlayer2(player);
-            setGamePlaying(true);
-          }
-        } catch (err) {
-          console.error("Failed to parse joined_room data:", err);
-        }
-      }
-    },
-    [username]
-  );
-
-  const onGamePlayed = useCallback((data) => {
-    const gameState = data.game_state;
-    setCurrentPlayer(gameState.currentPlayer);
-    setBoard(gameState.board);
-    setIsFilled(gameState.isFilled);
-  }, []);
-
-  const onGameWon = useCallback(
-    (data) => {
-      const gameState = data.game_state;
-      setBoard(gameState.board);
-      const winner = gameState.winner;
-      alert(winner === username ? "You Won :D" : "You Lost :(");
-      navigate("/home");
-    },
-    [username, navigate]
-  );
-
-  const onGameDraw = useCallback(() => {
-    alert("Game Drawn");
-    navigate("/home");
-  }, [navigate]);
-
-  const onPlayerLeft = useCallback(
-    (data) => {
-      if (!data || !data.username) return;
-
-      if (data.username !== username) {
-        alert("Opponent left. You won!");
-        navigate("/home");
-      }
-    },
-    [username, navigate]
-  );
-
-  // === Socket Registration ===
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on("joined_room", onJoinedRoom);
-    socket.on("game_played", onGamePlayed);
-    socket.on("game_won", onGameWon);
-    socket.on("game_draw", onGameDraw);
-    socket.on("player_left", onPlayerLeft);
-
-    return () => {
-      socket.off("joined_room", onJoinedRoom);
-      socket.off("game_played", onGamePlayed);
-      socket.off("game_won", onGameWon);
-      socket.off("game_draw", onGameDraw);
-      socket.off("player_left", onPlayerLeft);
-    };
-  }, [socket, onJoinedRoom, onGamePlayed, onGameWon, onGameDraw, onPlayerLeft]);
-
   // === Game Logic ===
   const hostGame = async () => {
     const body = { serviceID: 1, username };
@@ -146,21 +71,102 @@ const ConnectFourGame = ({ socket }) => {
     }
   };
 
-  const leaveGame = async (proper = false) => {
-    const body = {
-      serviceID: proper ? 5 : 4,
-      username,
-      room_code: roomCode,
+  const leaveGame = useCallback(
+    async (proper = false) => {
+      const body = {
+        serviceID: proper ? 5 : 4,
+        username,
+        room_code: roomCode,
+      };
+      const res = await axios.post(url, body);
+      if (res.data.code === 0) {
+        socket.emit("leave_room", roomCode);
+        setGameVisible(false);
+        navigate("/home");
+      } else {
+        alert(res.data.message);
+      }
+    },
+    [username, roomCode, socket, navigate]
+  );
+
+  // === Socket Handlers ===
+  const onJoinedRoom = useCallback(
+    (args) => {
+      if (args && typeof args === "string") {
+        try {
+          const data = JSON.parse(args);
+          console.log(data.name + " joined room");
+
+          const player = data.name;
+          if (player !== username) {
+            setPlayer2(player);
+            setGamePlaying(true);
+          }
+        } catch (err) {
+          console.error("Failed to parse joined_room data:", err);
+        }
+      }
+    },
+    [username]
+  );
+
+  const onGamePlayed = useCallback((data) => {
+    const gameState = data.game_state;
+    setCurrentPlayer(gameState.currentPlayer);
+    setBoard(gameState.board);
+    setIsFilled(gameState.isFilled);
+  }, []);
+
+  const onGameWon = useCallback(
+    (data) => {
+      const gameState = data.game_state;
+      setBoard(gameState.board);
+      const winner = gameState.winner;
+      setTimeout(() => {
+        alert(winner === username ? "You Won :D" : "You Lost :(");
+        navigate("/home");
+        leaveGame(true);
+      }, 100);
+    },
+    [username, navigate, leaveGame]
+  );
+
+  const onGameDraw = useCallback(() => {
+    alert("Game Drawn");
+    navigate("/home");
+  }, [navigate]);
+
+  const onPlayerLeft = useCallback(
+    (data) => {
+      if (!data || !data.username) return;
+
+      if (data.username !== username) {
+        alert("Opponent left. You won!");
+        navigate("/home");
+      }
+    },
+    [username, navigate]
+  );
+
+  // === Socket Registration ===
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("joined_room", onJoinedRoom);
+    socket.on("game_played", onGamePlayed);
+    socket.on("game_won", onGameWon);
+    socket.on("game_draw", onGameDraw);
+    socket.on("player_left", onPlayerLeft);
+
+    return () => {
+      socket.off("joined_room", onJoinedRoom);
+      socket.off("game_played", onGamePlayed);
+      socket.off("game_won", onGameWon);
+      socket.off("game_draw", onGameDraw);
+      socket.off("player_left", onPlayerLeft);
     };
-    const res = await axios.post(url, body);
-    if (res.data.code === 0) {
-      socket.emit("leave_room", roomCode);
-      setGameVisible(false);
-      navigate("/home");
-    } else {
-      alert(res.data.message);
-    }
-  };
+  }, [socket, onJoinedRoom, onGamePlayed, onGameWon, onGameDraw, onPlayerLeft]);
 
   return (
     <div className="container" style={{ padding: "1rem" }}>
